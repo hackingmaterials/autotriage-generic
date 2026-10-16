@@ -95,7 +95,7 @@ contributors can't add them, and many repos stopped using them.
 Request review from the relevant maintainer above (`gh pr edit --add-reviewer`),
 add the `review requested` label, and leave one comment that @-mentions them,
 in the format under "Writing comments". Put the evidence a maintainer needs
-to decide in the details (see "Judging evidence").
+under Core issues (see "Judging evidence").
 
 If the PR also matches rule 3 or 4, include that in the same comment.
 
@@ -271,32 +271,44 @@ of this evidence the PR has, and whatever it lacks, in your summary.
 
 ## Writing comments
 
-Everything you post uses this format: escalations, clarification requests,
-CI approval requests, PR reviews, and replies to maintainers who tagged you.
+Keep every comment short. Everything you post (escalations, clarification
+requests, CI approval requests, reviews, replies) looks like this, with only
+the sections you need:
 
-1. **Bottom line:** 1-2 sentences of NO MORE than 20 words total.
-   Give the conclusion, plus what you need from whom. Start the comment with
-   this as a plain sentence. Don't label it or put a heading above it.
-2. **Details:** more explanation, code snippets, what works and what doesn't.
-   When replying to a maintainer's question, answer it in the bottom line
-   first.
+```markdown
+One sentence, at most 20 words: the conclusion, and what you need from whom.
 
-Also:
+<details><summary>Core issues</summary>
 
-- End each comment with one line saying it is an automated triage review
-  whose conclusions should be checked by a person. Follow the AI policy above.
-- Say what you checked. If you read only part of a large diff, say which part.
-- If the PR fixes an issue, link the issue. Say whether the reporter's
-  reproducer is now covered by a test.
-- If the fix comes from someone else's issue comment, suggest crediting them
-  (e.g. `Co-authored-by`).
-- Be concise and friendly; many contributors are first-time scientific-software
-  authors.
-- Write formulas in comments as LaTeX (`$...$` inline, `$$...$$` for blocks),
-  not Unicode symbols.
+- what's wrong or risky, and the evidence
 
-Style for this repo. This overrides the lines above, but never the bottom
-line up front, which always stays:
+</details>
+<details><summary>Fixes</summary>
+
+- what to change
+
+</details>
+<details><summary>Questions</summary>
+
+- what you need answered, and by whom
+
+</details>
+
+_Automated review; a person should check it._
+```
+
+- Start with that sentence, unlabeled: no "bottom line" label or heading.
+  Answer a maintainer's question there.
+- Nothing outside that sentence, the sections, and the closing line.
+- Short bullets, not paragraphs.
+- Under Core issues, link any issue the PR fixes, and say which part of a
+  large diff you read if you didn't read it all.
+- If a fix came from someone's issue comment, suggest crediting them.
+- Follow the AI policy above in the closing line.
+- Write formulas as LaTeX (`$...$`), not Unicode symbols.
+
+Style for this repo. This overrides the lines above, but never the
+one-sentence opening, which always stays:
 
 - None listed yet.
 

@@ -69,7 +69,26 @@ way:
 - **Otherwise recommend normal.**
 - **Mayhem** is always available. Offer it like the others.
 
-Then ask about three settings, offering the defaults:
+Then ask these questions **one at a time**, in order. Each is yes or no;
+offer the chosen mode's answer as the default. Skip 5a if 5 is no.
+
+| # | Question | conservative / normal / mayhem |
+|---|---|---|
+| 0 | Should Claude review PRs: comment, label, and escalate to maintainers? | yes / yes / yes |
+| 1 | Should Claude auto-merge dependency upgrades? | no / yes / yes |
+| 2 | Should Claude auto-merge trivial doc updates and typo fixes? | no / yes / yes |
+| 3 | Should Claude auto-merge PRs that pass CI and follow the code guidance (tests included, nothing risky, no protected files like `.github/`)? | no / yes / yes |
+| 4 | Should Claude commit fixes to PRs failing CI or the code guidance, when a maintainer asks (`@claude fix` on the PR)? | no / yes / yes |
+| 5 | Should Claude open PRs fixing issues, when a maintainer asks (`@claude fix` on the issue)? | no / yes / yes |
+| 5a | Should Claude merge its own issue-fix PRs once CI passes? | no / no / yes |
+
+Merging a PR after Claude commits to it (4) follows the answer to 3.
+If the mode is conservative and any of 1-5 is yes, switch to normal and
+say why: conservative never merges or commits.
+
+Then ask about three settings, offering the defaults. If 0 is no, skip
+them: the bot then never sweeps and ignores mentions (`--cron never
+--mentions off`); only `@claude fix` works.
 
 | Setting | Choices | Default | `setup.sh` option |
 |---|---|---|---|
@@ -94,10 +113,6 @@ Add these as needed:
   to: the person who merged the most of others' PRs in the last 12 months.
   The rest are other maintainers. Only list people with write access
   (`gh api repos/OWNER/REPO/collaborators/HANDLE/permission`).
-- **`--test-command CMD` and `--install-command CMD`** (normal and mayhem),
-  copied from the repo's CI. If the tests can't run on a plain GitHub
-  runner (they need cluster access, licensed codes, or secrets), use
-  `--no-autofix` instead.
 - **`--pip-tools`** only if the repo keeps pip-tools lock files in
   `requirements/`.
 - **`--allow-no-ci`** if the repo has no CI at all and the person still
@@ -105,10 +120,21 @@ Add these as needed:
   has any CI.
 
 Only run `setup.sh` when there is no output yet, or to switch between
-conservative and normal or mayhem. That switch changes which files exist
-and the workflow's token; normal to mayhem and back is just the `mode` line.
+conservative and normal or mayhem. That switch changes which files exist;
+normal to mayhem and back is just the `mode` line.
 A rerun moves the old folder to `output/REPO/.github.previous/`. Copy any
 sections you or the person filled in back from there.
+
+Then write the answers to questions 1-5a into
+`output/REPO/.github/autotriage.conf`, so the file says exactly what was
+chosen:
+
+| Answer | Line |
+|---|---|
+| 1, 2, 3 | `merge = deps`, `merge = docs`, `merge = tested`: one line per yes. In mayhem, also `merge = reviewed`. If all are no, `merge = none`. |
+| 4 | `autofix_prs = on` or `off` |
+| 5 | `autofix_issues = on` or `off` |
+| 5a | `merge_own_fixes = yes` or `no` |
 
 `setup.sh` prints the setup checklist; put it in your report.
 
@@ -174,7 +200,7 @@ already exist or the person seems in a hurry. Show the defaults, and accept
 | Topic | Default |
 |---|---|
 | Tone | Concise and friendly |
-| Length | The bottom line, then a few short bullets |
+| Length | A one-sentence bottom line; everything else in collapsed Core issues, Fixes, and Questions sections |
 | Contributors | Assume many are first-time contributors |
 | Language and spelling | English, matching the repo's docs |
 | Formulas and code | Formulas in LaTeX; code in fenced blocks |
@@ -201,7 +227,8 @@ mode, which never merges or commits.
 | More or fewer PRs handled per sweep | `max_prs_per_run` |
 | Maintainers unable to tag `@claude` | `mentions = off` |
 | Different kinds of PR merged | `merge = docs`, `deps`, `tested`, `reviewed`, or `none`. Repeat for several; the list replaces the mode's. |
-| No `@claude fix` | `autofix = off`, and delete the autofix files |
+| No `@claude fix` on PRs, or on issues | `autofix_prs = off`, `autofix_issues = off`. With both off, delete the autofix files. |
+| The bot to merge its own issue-fix PRs, or not | `merge_own_fixes = yes` or `no` |
 | The bot kept away from more files | More `protected` patterns |
 | Bot changes kept to some directories | `autofix_paths` patterns |
 | Some branches never merged by the bot | `block_branch` patterns |
@@ -211,8 +238,8 @@ Before the files are copied into the repo, they are under
 `output/REPO/.github/`; edit them there.
 
 To change the mode itself, between normal and mayhem, edit the `mode` line.
-To or from conservative, rerun `setup.sh` (step 2), so the files and the
-workflow's token match the mode. Switching to conservative by editing the
+To or from conservative, rerun `setup.sh` (step 2), so the files match the
+mode. Switching to conservative by editing the
 `mode` line alone also works at once: both gate scripts then refuse
 everything.
 

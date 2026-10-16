@@ -16,7 +16,8 @@ failed=0
 check() {
   printf '%b\n' "$2" >"$tmp/autotriage.conf"
   printf '%s\n' "$3" >"$tmp/gh.json"
-  out=$(bash "$tmp/$1" 7 someone "$tmp" 2>&1 || true)
+  # The guard takes the PR number; the publish script reads these variables.
+  out=$(NUMBER=7 REQUESTER=someone GH_TOKEN=x bash "$tmp/$1" 7 2>&1 || true)
   if [[ "$out" != *"$4"* ]]; then
     echo "FAIL: $1 with conf '$2': got '$out', expected '$4'"
     failed=1

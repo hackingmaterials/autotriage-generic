@@ -55,11 +55,8 @@ merge to `main`. Nothing runs until it's there.
 
 If the API key isn't set yet: `gh secret set ANTHROPIC_API_KEY -R OWNER/REPO`
 
-`normal` or `mayhem` mode: run `/install-github-app` in Claude Code, from your
-repo. Skip its own workflows.
-
-Optional: for CI on the bot's own PRs, add a personal access token as a `PAT`
-secret.
+Run `/install-github-app` in Claude Code, from your repo, so the bot posts as
+`claude[bot]`. Skip its own workflows.
 
 ## How does it work?
 

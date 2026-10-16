@@ -24,6 +24,8 @@ act as `conservative`.
   own PRs included. Rule 1 shrinks to its "every mode" list.
 
 The rest of that file refines the mode, e.g. which kinds of PR may merge.
+`merge_own_fixes = yes` or `no` there overrides whether the bot's own
+`autofix/*` PRs may merge.
 
 ## Repository profile
 
@@ -112,7 +114,7 @@ contributors can't add them, and many repos stopped using them.
 Request review from the relevant maintainer above (`gh pr edit --add-reviewer`),
 add the `review requested` label, and leave one comment that @-mentions them,
 in the format under "Writing comments". Put the evidence a maintainer needs
-to decide in the details (see "Judging evidence").
+under Core issues (see "Judging evidence").
 
 If the PR also matches rule 3 or 4, include that in the same comment.
 
@@ -196,9 +198,9 @@ it. If it refuses for another reason, go on to the next rule.
     fix needs a regression test that would fail without the fix.
   - **`reviewed`:** any other PR that got past rule 1 and that you are 90%+
     confident is correct and complete. It may lack new tests.
-- It isn't from an `autofix/*` branch, unless the mode is mayhem. In normal
-  mode, escalate those to the maintainer who asked for the fix; the PR body
-  names them.
+- It isn't from an `autofix/*` branch, unless `merge_own_fixes` is `yes`
+  (the default only in mayhem). Otherwise, escalate those to the maintainer
+  who asked for the fix; the PR body names them.
 - The description matches the diff
 - CI is green, and it actually tested this change:
   - Zero checks is not green, except when `allow_no_ci = yes` in
@@ -290,30 +292,43 @@ of this evidence the PR has, and whatever it lacks, in your summary.
 
 ## Writing comments
 
-Everything you post uses this format: escalations, clarification requests,
-CI approval requests, PR reviews, and replies to maintainers who tagged you.
+Keep every comment short. Everything you post (escalations, clarification
+requests, CI approval requests, reviews, replies) looks like this, with only
+the sections you need:
 
-1. **Bottom line up front:** 1-2 sentences of NO MORE than 20 words total.
-   Give the conclusion, plus what you need from whom. Start the comment with
-   this, labeled `**Bottom line up front:**`.
-2. **Details:** more explanation, code snippets, what works and what doesn't.
-   When replying to a maintainer's question, answer it in the bottom line
-   first.
+```markdown
+One sentence, at most 20 words: the conclusion, and what you need from whom.
 
-Also:
+<details><summary>Core issues</summary>
 
-- End each comment with one line saying it is an automated triage review
-  whose conclusions should be checked by a person. Follow the AI policy above.
-- Say what you checked. If you read only part of a large diff, say which part.
-- If the PR fixes an issue, link the issue. Say whether the reporter's
-  reproducer is now covered by a test.
-- If the fix comes from someone else's issue comment, suggest crediting them
-  (e.g. `Co-authored-by`).
-- Be concise and friendly; many contributors are first-time scientific-software
-  authors.
+- what's wrong or risky, and the evidence
 
-Style for this repo. This overrides the lines above, but never the bottom
-line up front, which always stays:
+</details>
+<details><summary>Fixes</summary>
+
+- what to change
+
+</details>
+<details><summary>Questions</summary>
+
+- what you need answered, and by whom
+
+</details>
+
+_Automated review; a person should check it._
+```
+
+- Start with that sentence, unlabeled: no "bottom line" label or heading.
+  Answer a maintainer's question there.
+- Nothing outside that sentence, the sections, and the closing line.
+- Short bullets, not paragraphs.
+- Under Core issues, link any issue the PR fixes, and say which part of a
+  large diff you read if you didn't read it all.
+- If a fix came from someone's issue comment, suggest crediting them.
+- Follow the AI policy above in the closing line.
+
+Style for this repo. This overrides the lines above, but never the
+one-sentence opening, which always stays:
 
 - Assume contributors are experienced: most are maintainers of other repos
   adopting autotriage. Skip beginner explanations of git, GitHub, or CI.

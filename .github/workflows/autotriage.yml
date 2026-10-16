@@ -78,6 +78,15 @@ jobs:
           fi
           echo "run=$run" >>"$GITHUB_OUTPUT"
 
+      # Reacts 👀 to the maintainer's comment, to show the bot is on it.
+      - name: Acknowledge the comment
+        if: steps.settings.outputs.run == 'true' && github.event_name == 'issue_comment'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api -X POST "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" \
+            -f content=eyes >/dev/null || echo "Couldn't add the reaction; carrying on."
+
       # Creates the labels the bot and guard use, if the repo lacks them.
       - name: Create missing labels
         if: steps.settings.outputs.run == 'true'
@@ -116,7 +125,8 @@ jobs:
                Read the surrounding source in this checkout, and its `git log`/`git blame`,
                when you need context to judge the change.
             4. Take exactly one action per PR as the rules file specifies. Every comment or review
-               you post starts with a bottom line up front, as in the rules file's "Writing comments".
+               you post follows "Writing comments" in the rules: an unlabeled one-sentence bottom
+               line, the rest in collapsed sections.
             5. Finish with a short summary table: PR number, title, action taken, reason.
                List any PRs left unprocessed because of the limit.
           claude_args: >-

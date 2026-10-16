@@ -19,9 +19,6 @@
 #   --max-prs N             PRs each sweep may act on [5]
 #   --mentions on|off       maintainers can tag @claude on issues and PRs [on]
 #   --no-autofix            no "@claude fix" in normal or mayhem mode
-#   --test-command CMD      how autofix runs tests [python -m pytest]
-#   --install-command CMD   how autofix installs the package
-#                           [python -m pip install -e ".[tests]" pytest]
 #   --pip-tools             add the weekly pip-tools dependency upgrade workflow
 #   --allow-no-ci           let the bot merge on its own review if the repo
 #                           has no CI at all (ignored once it has any CI)
@@ -78,17 +75,12 @@ set_text() {
   mv "$1.tmp" "$1"
 }
 
-# Quote $1 as a single-quoted YAML string.
-yaml_quote() { printf "'%s'" "$(printf '%s' "$1" | sed "s/'/''/g")"; }
-
 # Read the options.
 mode=conservative
 cron=weekdays
 max_prs=5
 mentions=on
 autofix=on
-test_cmd=""
-install_cmd=""
 pip_tools=false
 allow_no_ci=no
 repo=""
@@ -101,8 +93,6 @@ while [[ $# -gt 0 ]]; do
     --max-prs) need "$@"; max_prs="$2"; shift 2 ;;
     --mentions) need "$@"; mentions="$2"; shift 2 ;;
     --no-autofix) autofix=off; shift ;;
-    --test-command) need "$@"; test_cmd="$2"; shift 2 ;;
-    --install-command) need "$@"; install_cmd="$2"; shift 2 ;;
     --pip-tools) pip_tools=true; shift ;;
     --allow-no-ci) allow_no_ci=yes; shift ;;
     --repo) need "$@"; repo="$2"; shift 2 ;;
@@ -115,8 +105,6 @@ done
 [[ "$mode" =~ ^(conservative|normal|mayhem)$ ]] || die "--mode must be conservative, normal, or mayhem"
 [[ "$max_prs" =~ ^[1-9][0-9]*$ ]] || die "--max-prs must be a whole number above 0"
 [[ "$mentions" =~ ^(on|off)$ ]] || die "--mentions must be on or off"
-# The test command also goes inside a double-quoted --allowedTools list.
-[[ "$test_cmd" != *'"'* ]] || die "--test-command can't contain double quotes; use single quotes"
 case "$cron" in
   weekdays) cron_expr="0 16 * * 1-5" ;;
   daily) cron_expr="0 16 * * *" ;;
@@ -200,19 +188,8 @@ else
   set_line "$wf" "    - cron: " "    - cron: \"$cron_expr\""
 fi
 if [[ "$mode" == conservative ]]; then
-  # Conservative never merges: no guard, and the job's own read-only token
-  # instead of the Claude app's token, which permissions: doesn't limit.
+  # Conservative never merges, so the bot doesn't get the merge guard.
   set_text "$wf" ",Bash(.github/autotriage_guard.sh:*)" ""
-  set_line "$wf" "      contents: write" "      contents: read"
-  set_line "$wf" "          anthropic_api_key: " "          anthropic_api_key: \${{ secrets.ANTHROPIC_API_KEY }}
-          # Conservative mode: the job's own token, limited by permissions.
-          github_token: \${{ github.token }}"
-fi
-
-if [[ -f workflows/autofix.yml ]]; then
-  af=workflows/autofix.yml
-  if [[ -n "$test_cmd" ]]; then set_line "$af" "      TEST_COMMAND: " "      TEST_COMMAND: $(yaml_quote "$test_cmd")"; fi
-  if [[ -n "$install_cmd" ]]; then set_line "$af" "        run: python -m pip install" "        run: $(yaml_quote "$install_cmd")"; fi
 fi
 
 rules=autotriage_rules.md
@@ -333,11 +310,9 @@ section "To install"
 step "Copy the folder's contents into .github/ in your $repo checkout (files with the same names are replaced):" \
   "cp -R $rel/. path/to/${repo#*/}/.github/"
 step "Merge it into your default branch (usually main), through a PR or directly. ${bold}Nothing runs until it is there:${reset} GitHub only runs scheduled and comment-triggered workflows from the default branch."
-if [[ "$mode" != conservative ]]; then
-  step "Install the Claude GitHub App: run /install-github-app in Claude Code, from your repo. Skip its own workflows."
-fi
-if [[ "$mode" != conservative || "$pip_tools" == true ]]; then
-  step "Optional, for CI on the bot's own PRs: add a personal access token as a PAT secret:" \
+step "Install the Claude GitHub App, so the bot posts as claude[bot]: run /install-github-app in Claude Code, from your repo. Skip its own workflows."
+if [[ "$pip_tools" == true ]]; then
+  step "For CI on the dependency PRs: add a personal access token as a PAT secret:" \
     "https://github.com/settings/personal-access-tokens/new" "then $url/settings/secrets/actions/new"
 fi
 step "Turn off \"Allow GitHub Actions to create and approve pull requests\":" \
@@ -345,9 +320,6 @@ step "Turn off \"Allow GitHub Actions to create and approve pull requests\":" \
 if [[ "$mode" != conservative ]]; then
   step "Protect the default branch: require PRs, with your test jobs as required status checks:" \
     "$url/settings/branches"
-fi
-if [[ -f workflows/autofix.yml && ( -z "$test_cmd" || -z "$install_cmd" ) ]]; then
-  step "Check that TEST_COMMAND and the install step in .github/workflows/autofix.yml match your CI."
 fi
 step "Run it once by hand and read the summary:" \
   "gh workflow run autotriage -R $repo"

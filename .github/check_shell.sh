@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Test command for "@claude fix" (TEST_COMMAND in workflows/autofix.yml).
+# Run by workflows/ci.yml on every PR and push to main.
 # This repo has no test suite, so: syntax-check every shell script, make sure
 # setup.sh still starts, then run any tests/*.sh. Arguments are ignored.
 set -euo pipefail
