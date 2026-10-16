@@ -305,10 +305,6 @@ echo
 echo "If $repo already has other workflows that run Claude, make sure they don't"
 echo "answer the same @claude comments. If you rerun setup.sh with a different mode,"
 echo "delete autotriage files the new mode no longer lists from the repo."
-echo
-echo "Optional, before copying: tailor the rules to $repo (maintainers, risky code,"
-echo "contribution requirements). Ask Claude Code, from this directory:"
-echo "  Read CUSTOMIZE.md and fill in the repo-specific sections of $rel/autotriage_rules.md for $repo."
 if [[ -n "$lint_note" ]]; then
   echo
   echo "$lint_note"
@@ -342,3 +338,10 @@ else
   echo "  Couldn't check $repo's secrets (gh isn't installed or logged in, or you"
   echo "  lack access). If ANTHROPIC_API_KEY isn't set yet, add it at $new_secret"
 fi
+
+# How to tailor the files with an agent.
+echo
+echo "Now run this in your agent:"
+echo
+echo "  Read CUSTOMIZE.md and walk me through customizing the autotriage files in"
+echo "  $rel for $repo. I already ran setup.sh."
