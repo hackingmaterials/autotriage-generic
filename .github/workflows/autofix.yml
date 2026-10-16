@@ -125,10 +125,17 @@ jobs:
 
       # Secret scrubbing (CLAUDE_CODE_SUBPROCESS_ENV_SCRUB above) runs Claude's
       # commands in a bubblewrap sandbox, which the runner lacks by default.
+      # Ubuntu 24.04 also blocks the user namespaces bubblewrap needs, so lift
+      # that, the way claude-code-action does, then check the sandbox starts.
       - name: Install sandbox tools
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends bubblewrap socat
+          if [[ -f /proc/sys/kernel/apparmor_restrict_unprivileged_userns ]]; then
+            sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          fi
+          bwrap --ro-bind / / --dev /dev --proc /proc --unshare-user --unshare-pid true ||
+            { echo "The bubblewrap sandbox can't start on this runner."; exit 1; }
 
       - name: Run Claude
         uses: anthropics/claude-code-action@v1
