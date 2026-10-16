@@ -4,7 +4,9 @@ Generate an AI auto-triage configuration for GitHub.
 
 
 ## Step 1: Generate files
-### Option A. Generate files entirely with an agent
+
+<details>
+<summary><b>Option A. Generate files entirely with an agent</b></summary>
 
 Run `setup.sh` through your agent, from this directory:
 
@@ -12,12 +14,10 @@ Run `setup.sh` through your agent, from this directory:
 Read CUSTOMIZE.md and walk me through setting up autotriage for OWNER/REPO
 ```
 
+</details>
 
-
-
-
-### Option B. Generate manually and refine with an agent/manually
-
+<details>
+<summary><b>Option B. Generate manually and refine with an agent/manually</b></summary>
 
 #### Step B1:
 
@@ -45,6 +45,8 @@ Either:
   prints at the end
 - edit `output/REPO/.github/autotriage_rules.md` (and `autotriage.conf` for
   settings) yourself
+
+</details>
 
 ## Step 3: Put in your repo
 
