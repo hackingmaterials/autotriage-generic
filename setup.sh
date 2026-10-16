@@ -5,6 +5,10 @@
 #   ./setup.sh --repo OWNER/REPO --mode normal --maintainer @someone
 #   cp -R output/REPO/.github/. path/to/REPO/.github/
 #
+# Required:
+#   --repo OWNER/REPO       the repository to make files for, as in its URL,
+#                           e.g. hackingmaterials/matminer
+#
 # Options (defaults in brackets):
 #   --mode MODE             conservative, normal, or mayhem [conservative]
 #   --maintainer @HANDLE    who the bot escalates to; repeat to list other
@@ -19,7 +23,6 @@
 #   --install-command CMD   how autofix installs the package
 #                           [python -m pip install -e ".[tests]" pytest]
 #   --pip-tools             add the weekly pip-tools dependency upgrade workflow
-#   --repo OWNER/REPO       the repository to make files for (required)
 #
 # Modes:
 #   conservative  Code review only: comments, labels, escalations.
