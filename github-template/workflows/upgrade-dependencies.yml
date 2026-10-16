@@ -1,0 +1,94 @@
+# Weekly pinned-dependency upgrades for Python projects using pip-tools, as a
+# single PR from a fixed branch that autotriage.conf lists as deps_branch.
+# Lock files go to requirements/<os>_py<version>.txt, one per matrix entry.
+# Needs a PAT secret so CI runs on the PR without approval.
+# Based on https://www.oddbird.net/2022/06/01/dependabot-single-pull-request/
+name: upgrade dependencies
+
+on:
+  workflow_dispatch: # Allow running on-demand
+  schedule:
+    # Runs every Monday at 8:00 UTC (4:00 Eastern)
+    - cron: '0 8 * * 1'
+
+env:
+  # Must match deps_branch in .github/autotriage.conf.
+  DEPS_BRANCH: auto-dependency-upgrades
+  # pip-tools often lags new pip releases; loosen once it catches up.
+  PIP_SPEC: 'pip<26'
+
+jobs:
+  upgrade:
+    name: ${{ matrix.os }}/py${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        # Match the platforms and Python versions your CI tests against.
+        os: ['ubuntu-latest']
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Upgrade Python dependencies
+        shell: bash
+        run: |
+          python${{ matrix.python-version }} -m pip install --upgrade "$PIP_SPEC" pip-tools
+          python${{ matrix.python-version }} -m piptools compile -q --upgrade --all-extras -o "requirements/${{ matrix.os }}_py${{ matrix.python-version }}.txt"
+      - name: Detect changes
+        id: changes
+        shell: bash
+        run: |
+          echo "count=$(git diff-index HEAD | wc -l | xargs)" >> "$GITHUB_OUTPUT"
+          echo "files=$(git ls-files --exclude-standard --others | wc -l | xargs)" >> "$GITHUB_OUTPUT"
+      - name: commit & push changes
+        if: steps.changes.outputs.count > 0 || steps.changes.outputs.files > 0
+        shell: bash
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add requirements
+          git commit -m "update dependencies for ${{ matrix.os }}/py${{ matrix.python-version }}"
+          git push -f origin "${{ github.ref_name }}:$DEPS_BRANCH-${{ matrix.os }}-py${{ matrix.python-version }}"
+
+  pull_request:
+    name: Merge all branches and open PR
+    runs-on: ubuntu-latest
+    needs: upgrade
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # Push with PAT so PR CI runs without approval.
+          token: ${{ secrets.PAT }}
+      - name: detect dependency upgrade branches
+        id: changes
+        run: echo "count=$(git branch -r | grep -c "$DEPS_BRANCH-")" >> "$GITHUB_OUTPUT"
+      - name: merge all dependency upgrade branches
+        if: steps.changes.outputs.count > 0
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git checkout -b "$DEPS_BRANCH"
+          git branch -r | grep "$DEPS_BRANCH-" | xargs -I {} git merge {}
+          git rebase "$GITHUB_REF_NAME"
+          git push -f origin "$DEPS_BRANCH"
+          git branch -r | grep "$DEPS_BRANCH-" | cut -d/ -f2 | xargs -I {} git push origin :{}
+      - name: Open pull request if needed
+        if: steps.changes.outputs.count > 0
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        # Only open a PR if the branch is not attached to an existing one
+        run: |
+          PR=$(gh pr list --head "$DEPS_BRANCH" --json number -q '.[0].number')
+          if [ -z "$PR" ]; then
+            gh pr create \
+            --head "$DEPS_BRANCH" \
+            --title "Automated dependency upgrades" \
+            --body "Full log: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          else
+            echo "Pull request already exists, won't create a new one."
+          fi
