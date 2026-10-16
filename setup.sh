@@ -334,12 +334,11 @@ step "Copy the folder's contents into .github/ in your $repo checkout (files wit
   "cp -R $rel/. path/to/${repo#*/}/.github/"
 step "Merge it into your default branch (usually main), through a PR or directly. ${bold}Nothing runs until it is there:${reset} GitHub only runs scheduled and comment-triggered workflows from the default branch."
 if [[ "$mode" != conservative ]]; then
-  step "Install the Claude GitHub App on $repo; the bot merges and commits with its token:" \
-    "https://github.com/apps/claude"
+  step "Install the Claude GitHub App: run /install-github-app in Claude Code, from your repo. Skip its own workflows."
 fi
 if [[ "$mode" != conservative || "$pip_tools" == true ]]; then
-  step "Add a PAT secret, so CI runs on the bot's PRs and commits:" \
-    "$url/settings/secrets/actions/new" "or: gh secret set PAT -R $repo"
+  step "Optional, for CI on the bot's own PRs: add a personal access token as a PAT secret:" \
+    "https://github.com/settings/personal-access-tokens/new" "then $url/settings/secrets/actions/new"
 fi
 step "Turn off \"Allow GitHub Actions to create and approve pull requests\":" \
   "$url/settings/actions"

@@ -48,16 +48,18 @@ Either:
 
 </details>
 
-## Step 3: Put in your repo
+## Step 2: Put in your repo
 
-Copy the contents of `output/REPO/.github/` into your repository's `.github/`,
-and merge it into your default branch (usually `main`). Nothing runs until it
-is there.
+Copy the contents of `output/REPO/.github/` into your repo's `.github/` and
+merge to `main`. Nothing runs until it's there.
 
-Ensure your key `ANTHROPIC_API_KEY` is set as a repository secret. `setup.sh`
-checks this and offers to set it. In `normal` and `mayhem` modes, also install
-the [Claude GitHub App](https://github.com/apps/claude) on the repo and add a
-`PAT` secret. `setup.sh` prints the full checklist, with links.
+If the API key isn't set yet: `gh secret set ANTHROPIC_API_KEY -R OWNER/REPO`
+
+`normal` or `mayhem` mode: run `/install-github-app` in Claude Code, from your
+repo. Skip its own workflows.
+
+Optional: for CI on the bot's own PRs, add a personal access token as a `PAT`
+secret.
 
 ## How does it work?
 
