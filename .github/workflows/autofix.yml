@@ -123,7 +123,15 @@ jobs:
           mkdir -p "$RUNNER_TEMP/autofix"
           git rev-parse HEAD >"$RUNNER_TEMP/autofix/base.sha"
 
-      - uses: anthropics/claude-code-action@v1
+      # Secret scrubbing (CLAUDE_CODE_SUBPROCESS_ENV_SCRUB above) runs Claude's
+      # commands in a bubblewrap sandbox, which the runner lacks by default.
+      - name: Install sandbox tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends bubblewrap socat
+
+      - name: Run Claude
+        uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           # The job's own read-only token, instead of the Claude app's token.
@@ -218,13 +226,18 @@ jobs:
     permissions:
       issues: write
       pull-requests: write
+      actions: read
     steps:
       - env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh issue comment "$NUMBER" -R "${{ github.repository }}" --body "**Bottom line up front:** The autofix run stopped before producing a change. It needs a maintainer's request, a mode other than conservative, and (for a PR) a branch in this repository.
+          step=$(gh run view "${{ github.run_id }}" -R "${{ github.repository }}" --json jobs \
+            --jq '[.jobs[] | select(.name == "fix") | .steps[] | select(.conclusion == "failure") | .name][0] // "an unknown step"')
+          gh issue comment "$NUMBER" -R "${{ github.repository }}" --body "**Bottom line up front:** The autofix run failed at \"$step\" before producing a change; the log says why.
 
           Log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+          Common causes: the request didn't come from a maintainer, the mode is conservative, or the PR's branch is in a fork. Anything else is a setup problem.
 
           ---
           Automated reply from the autofix bot."
