@@ -79,8 +79,8 @@ Always write `.autofix_summary.md` in the repo root. It becomes the PR
 description, or the comment on the issue or PR. Use the format under
 "Writing comments" in `autotriage_rules.md`:
 
-1. **Bottom line up front:** at most 20 words. What you changed and how sure
-   you are, or why you didn't change anything.
+1. **Bottom line,** unlabeled: at most 20 words. What you changed and how
+   sure you are, or why you didn't change anything.
 2. **Details:**
    - **Root cause or request:** what was wrong, or what was asked.
    - **What changed:** file by file.

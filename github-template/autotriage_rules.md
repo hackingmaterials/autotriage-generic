@@ -272,9 +272,9 @@ of this evidence the PR has, and whatever it lacks, in your summary.
 Everything you post uses this format: escalations, clarification requests,
 CI approval requests, PR reviews, and replies to maintainers who tagged you.
 
-1. **Bottom line up front:** 1-2 sentences of NO MORE than 20 words total.
+1. **Bottom line:** 1-2 sentences of NO MORE than 20 words total.
    Give the conclusion, plus what you need from whom. Start the comment with
-   this, labeled `**Bottom line up front:**`.
+   this as a plain sentence. Don't label it or put a heading above it.
 2. **Details:** more explanation, code snippets, what works and what doesn't.
    When replying to a maintainer's question, answer it in the bottom line
    first.
