@@ -1,0 +1,18 @@
+# Checks this repo on every PR and push to main: shell syntax, setup.sh,
+# and tests/. The bot's own PRs get tested here too.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash .github/check_shell.sh
