@@ -25,6 +25,7 @@ done
 [[ "$merge_method" =~ ^(squash|merge|rebase)$ ]] || fail "bad merge_method '$merge_method'"
 [[ "$max_changed_lines" =~ ^[0-9]+$ ]] || fail "bad max_changed_lines '$max_changed_lines'"
 [[ "$allow_no_ci" =~ ^(yes|no)$ ]] || fail "bad allow_no_ci '$allow_no_ci'"
+[[ "$merge_own_fixes" =~ ^(yes|no)$ ]] || fail "bad merge_own_fixes '$merge_own_fixes'"
 [[ -n "$base_branch" ]] || base_branch=$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)
 
 # Fetch the PR.
@@ -40,10 +41,10 @@ info=$(gh pr view "$pr" --json state,isDraft,mergeable,baseRefName,headRefName,h
 [[ $(jq -r .mergeable <<<"$info") == MERGEABLE ]] || fail "not mergeable (conflicts?)"
 # Check no reviewer has requested changes.
 [[ $(jq -r .reviewDecision <<<"$info") != CHANGES_REQUESTED ]] || fail "a reviewer requested changes"
-# Check the bot may merge from this branch: never its own fixes, except in
-# mayhem mode, and never a blocked branch.
+# Check the bot may merge from this branch: never its own fixes, unless
+# merge_own_fixes = yes, and never a blocked branch.
 head=$(jq -r .headRefName <<<"$info")
-[[ "$mode" == mayhem || "$head" != autofix/* ]] || fail "the bot's own fixes need a person to merge them"
+[[ "$merge_own_fixes" == yes || "$head" != autofix/* ]] || fail "the bot's own fixes need a person to merge them"
 ! matches_any "$head" ${block_branches[@]+"${block_branches[@]}"} || fail "PRs from $head are never auto-merged"
 # Check no label holds it back.
 labels=$(jq -r '.labels[].name' <<<"$info")

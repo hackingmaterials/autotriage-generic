@@ -42,6 +42,9 @@ load_conf() {
   deps_paths=()
   # Fixing (autofix_publish.sh).
   autofix=""
+  autofix_prs=""
+  autofix_issues=""
+  merge_own_fixes=""
   autofix_max_files=10
   autofix_max_changed_lines=200
   autofix_paths=()
@@ -68,6 +71,9 @@ load_conf() {
       deps_branch) deps_branches+=("$value") ;;
       deps_paths) deps_paths+=("$value") ;;
       autofix) autofix="$value" ;;
+      autofix_prs) autofix_prs="$value" ;;
+      autofix_issues) autofix_issues="$value" ;;
+      merge_own_fixes) merge_own_fixes="$value" ;;
       autofix_max_files) autofix_max_files="$value" ;;
       autofix_max_changed_lines) autofix_max_changed_lines="$value" ;;
       autofix_paths) autofix_paths+=("$value") ;;
@@ -89,6 +95,17 @@ load_conf() {
   if [[ -z "$autofix" ]]; then
     autofix=on
     [[ "$mode" != conservative ]] || autofix=off
+  fi
+  # autofix sets both kinds of fix; autofix_prs and autofix_issues override it.
+  [[ -n "$autofix_prs" ]] || autofix_prs="$autofix"
+  [[ -n "$autofix_issues" ]] || autofix_issues="$autofix"
+  if [[ -z "$merge_own_fixes" ]]; then
+    merge_own_fixes=no
+    [[ "$mode" != mayhem ]] || merge_own_fixes=yes
+  fi
+  # Conservative never commits or merges, whatever the file says.
+  if [[ "$mode" == conservative ]]; then
+    autofix=off autofix_prs=off autofix_issues=off merge_own_fixes=no
   fi
   return 0
 }
