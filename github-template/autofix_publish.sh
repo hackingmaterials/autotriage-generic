@@ -41,7 +41,7 @@ target="issue"
 [[ $(jq 'has("pull_request")' <<<"$info") == false ]] || target="pr"
 
 summary=$(cat "$dir/summary.md" 2>/dev/null || true)
-[[ -n "$summary" ]] || summary="**Bottom line up front:** The autofix bot left no write-up; see the workflow run."
+[[ -n "$summary" ]] || summary="The autofix bot left no write-up; see the workflow run."
 
 # No change: report back and stop.
 patch="$dir/autofix.patch"
@@ -126,7 +126,7 @@ if [[ "$target" == pr ]]; then
   commit "Apply changes requested by @$requester"
   git push -q --force-with-lease="$branch:$base" origin "$branch"
   sha=$(git rev-parse --short HEAD)
-  gh pr comment "$number" --body "**Bottom line up front:** Pushed $sha to this PR with the changes @$requester asked for; please review it.
+  gh pr comment "$number" --body "Pushed $sha to this PR with the changes @$requester asked for; please review it.
 
 It changes $n_files files ($n_lines lines).
 
@@ -183,7 +183,7 @@ fi
 # Tell the requester.
 tested="It does not change any test files."
 [[ "$has_test" == false ]] || tested="It includes test changes."
-gh issue comment "$number" --body "**Bottom line up front:** PR $url ($verb) proposes a fix; @$requester, please review it.
+gh issue comment "$number" --body "PR $url ($verb) proposes a fix; @$requester, please review it.
 
 It changes $n_files files ($n_lines lines). $tested CI results will appear on the PR.
 

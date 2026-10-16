@@ -125,7 +125,7 @@ jobs:
                Read the surrounding source in this checkout, and its `git log`/`git blame`,
                when you need context to judge the change.
             4. Take exactly one action per PR as the rules file specifies. Every comment or review
-               you post starts with a bottom line up front, as in the rules file's "Writing comments".
+               you post starts with an unlabeled bottom line, as in the rules file's "Writing comments".
             5. Finish with a short summary table: PR number, title, action taken, reason.
                List any PRs left unprocessed because of the limit.
           claude_args: >-

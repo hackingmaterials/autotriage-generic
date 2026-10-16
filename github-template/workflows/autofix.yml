@@ -240,7 +240,7 @@ jobs:
           if ! log=$("$gate/autofix_publish.sh" "$NUMBER" "$REQUESTER" "$RUNNER_TEMP/autofix" 2>&1); then
             echo "$log"
             reason=$(grep -m1 '^REFUSED' <<<"$log" || echo "REFUSED: the publish step failed")
-            gh issue comment "$NUMBER" --body "**Bottom line up front:** The autofix bot's change was not published: ${reason#*: }.
+            gh issue comment "$NUMBER" --body "The autofix bot's change was not published: ${reason#*: }.
 
           The patch and the full log are in ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}.
 
@@ -265,7 +265,7 @@ jobs:
         run: |
           step=$(gh run view "${{ github.run_id }}" -R "${{ github.repository }}" --json jobs \
             --jq '[.jobs[] | select(.name == "fix") | .steps[] | select(.conclusion == "failure") | .name][0] // "an unknown step"')
-          gh issue comment "$NUMBER" -R "${{ github.repository }}" --body "**Bottom line up front:** The autofix run failed at \"$step\" before producing a change; the log says why.
+          gh issue comment "$NUMBER" -R "${{ github.repository }}" --body "The autofix run failed at \"$step\" before producing a change; the log says why.
 
           Log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
