@@ -23,10 +23,35 @@ env:
   REQUESTER: ${{ github.event.comment.user.login || github.actor }}
 
 jobs:
+  # Reacts 👀 to a maintainer's "@claude fix" comment, to show the bot is on
+  # it. A job of its own, since the fix job must stay read-only.
+  acknowledge:
+    if: >-
+      github.event_name == 'issue_comment' &&
+      github.event.comment.user.type != 'Bot' && (
+        contains(github.event.comment.body, '@claude fix ') ||
+        contains(github.event.comment.body, '@claude fix:') ||
+        contains(github.event.comment.body, fromJSON('"@claude fix\n"')) ||
+        contains(github.event.comment.body, fromJSON('"@claude fix\r"')) ||
+        endsWith(github.event.comment.body, '@claude fix')
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          perm=$(gh api "repos/${{ github.repository }}/collaborators/$REQUESTER/permission" --jq .permission || echo none)
+          [[ "$perm" == admin || "$perm" == write ]] || { echo "Not a maintainer; no reaction."; exit 0; }
+          gh api -X POST "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" \
+            -f content=eyes >/dev/null || echo "Couldn't add the reaction; carrying on."
+
   fix:
     # Only comments from people with the command "@claude fix", followed by a
     # space, colon, line break, or nothing ("@claude fixed" doesn't count).
-    # autotriage.yml uses the same test to leave these comments alone.
+    # autotriage.yml and the acknowledge job use the same test.
     if: >-
       github.event_name == 'workflow_dispatch' || (
         github.event.comment.user.type != 'Bot' && (
