@@ -182,7 +182,10 @@ it. If it refuses for another reason, go on to the next rule.
   names them.
 - The description matches the diff
 - CI is green, and it actually tested this change:
-  - Zero checks is not green.
+  - Zero checks is not green, except when `allow_no_ci = yes` in
+    `.github/autotriage.conf` and the repo has no CI at all. Then your review
+    is the only check: read the whole diff, and merge only what you are sure
+    of.
   - Read the workflow triggers and path filters in `.github/workflows/`.
     Make sure the test jobs ran for the files this PR changes.
   - Tests that need secrets (API keys) are skipped on fork PRs. If the change
@@ -191,7 +194,8 @@ it. If it refuses for another reason, go on to the next rule.
 
 ### 3. CI has not run
 
-If no CI checks exist on the PR, find out why from the workflow files before acting:
+If no CI checks exist on the PR, find out why from the workflow files before acting.
+If `allow_no_ci = yes` and the repo has no CI at all, skip this rule.
 
 - **First-time contributor from a fork.** GitHub waits for a maintainer to
   approve workflow runs. Skim the diff for anything suspicious: changes to
@@ -288,6 +292,11 @@ Also:
   authors.
 - Write formulas in comments as LaTeX (`$...$` inline, `$$...$$` for blocks),
   not Unicode symbols.
+
+Style for this repo. This overrides the lines above, but never the bottom
+line up front, which always stays:
+
+- None listed yet.
 
 ## General conduct
 

@@ -5,13 +5,28 @@ You are given a repository, `OWNER/REPO`, and possibly a mode. `setup.sh`
 does the mechanical part: it writes the files for the mode, with working
 defaults, to `output/REPO/.github/`. You do the part that needs judgment:
 filling in what's specific to this repo, in those output files. The person
-copies the folder into their repo afterwards. If they already ran
-`setup.sh` and only want the rules tailored, skip to step 3.
+copies the folder into their repo afterwards.
+
+**First, check for existing output.** Look for `output/REPO/.github/`, where
+REPO is the part of `OWNER/REPO` after the slash.
+- **If it exists,** those are the files to customize. Don't run `setup.sh`
+  again unless step 2 says to.
+  1. Read the mode and settings in `output/REPO/.github/autotriage.conf`,
+     and the `cron` line in `output/REPO/.github/workflows/autotriage.yml`.
+  2. Show the table from step 1, and say which mode and settings the files
+     use.
+  3. Make any changes the person asks for by editing those files (step 4).
+  4. Go on to step 3.
+- **If it doesn't exist,** start at step 1.
 
 Ground rules:
 - Only write under `output/`. Gather facts about the target repo read-only:
   don't push, open PRs, comment, create labels or secrets, or change its
   settings unless the person asks.
+- The steps `setup.sh` lists under "To install" and "Anthropic API key" are
+  the person's to do: setting secrets, installing the Claude GitHub App, and
+  changing repo settings. Show them the steps and links; don't run them.
+  Never ask the person to paste an API key or token into the chat.
 - Base every filled-in value on evidence (files, settings, PR and issue
   history), and record it in the report. Never guess a maintainer handle.
 - When unsure, choose the more restrictive option and list it under
@@ -41,7 +56,10 @@ before anything else. Do this even if they already named a mode.
 > mode always wins: it stops every merge and commit.
 
 If the person named a mode, say which column applies and carry on.
-Otherwise ask which mode they want, recommending one:
+Otherwise ask which mode they want. Always offer all three, conservative,
+normal, and mayhem, and mark one as recommended. If you ask with a
+multiple-choice tool, give exactly those three options. Recommend one this
+way:
 - **Recommend conservative** if any of these hold:
   - merging deploys or publishes with no further human step;
   - it is a running service, or touches production data or credentials;
@@ -49,8 +67,7 @@ Otherwise ask which mode they want, recommending one:
   - CI doesn't run tests on PRs, or the default branch's CI is red;
   - no human has merged anything in 12 months.
 - **Otherwise recommend normal.**
-- **Recommend mayhem** only when the person asks for it. If any
-  conservative condition holds, warn them and ask them to confirm.
+- **Mayhem** is always available. Offer it like the others.
 
 Then ask about three settings, offering the defaults:
 
@@ -83,9 +100,17 @@ Add these as needed:
   `--no-autofix` instead.
 - **`--pip-tools`** only if the repo keeps pip-tools lock files in
   `requirements/`.
+- **`--allow-no-ci`** if the repo has no CI at all and the person still
+  wants the bot to merge, on its own review. It has no effect once the repo
+  has any CI.
 
-`setup.sh` replaces `output/REPO/.github/` on every run, and prints the
-setup checklist; put it in your report.
+Only run `setup.sh` when there is no output yet, or to switch between
+conservative and normal or mayhem. That switch changes which files exist
+and the workflow's token; normal to mayhem and back is just the `mode` line.
+A rerun moves the old folder to `output/REPO/.github.previous/`. Copy any
+sections you or the person filled in back from there.
+
+`setup.sh` prints the setup checklist; put it in your report.
 
 ## 3. Fill in the repo-specific sections
 
@@ -140,6 +165,30 @@ In `output/REPO/.github/autotriage.conf`:
   `deploy/*`). Prompt and skill directories. Data directories.
 - **Merge method:** set `merge_method` to one the repo allows.
 
+### Ask about style (always)
+
+Always ask the person how the bots should write, even when the files
+already exist or the person seems in a hurry. Show the defaults, and accept
+"keep the defaults".
+
+| Topic | Default |
+|---|---|
+| Tone | Concise and friendly |
+| Length | The bottom line, then a few short bullets |
+| Contributors | Assume many are first-time contributors |
+| Language and spelling | English, matching the repo's docs |
+| Formulas and code | Formulas in LaTeX; code in fenced blocks |
+| Emoji | None |
+| Sign-off | One line saying it is an automated review a person should check, plus any wording the AI policy requires |
+| Terms to use or avoid | The repo's own names for its parts, e.g. what it calls its plug-ins |
+| Anything maintainers dislike in bot comments | Nothing listed |
+
+Write each answer that differs from a default as one bullet under "Style
+for this repo", in "Writing comments" in
+`output/REPO/.github/autotriage_rules.md`. Both bots follow that section.
+The bottom line up front is fixed: style can change what goes in it, not
+remove it. If they keep every default, leave "None listed yet."
+
 ## 4. Refine, if the person asks
 
 Each refinement is a line in `.github/autotriage.conf`, except the
@@ -158,10 +207,14 @@ mode, which never merges or commits.
 | Some branches never merged by the bot | `block_branch` patterns |
 | Different size limits | `max_changed_lines`, `autofix_max_files`, `autofix_max_changed_lines` |
 
-To change the mode itself, rerun `setup.sh` with the new mode, so the files
-and workflow permissions match it, then copy again and delete files the new
-mode no longer lists. Switching to conservative by editing the `mode` line
-alone also works at once: both gate scripts then refuse everything.
+Before the files are copied into the repo, they are under
+`output/REPO/.github/`; edit them there.
+
+To change the mode itself, between normal and mayhem, edit the `mode` line.
+To or from conservative, rerun `setup.sh` (step 2), so the files and the
+workflow's token match the mode. Switching to conservative by editing the
+`mode` line alone also works at once: both gate scripts then refuse
+everything.
 
 ## 5. Check and report
 
@@ -182,7 +235,8 @@ Report to the person:
 2. The mode and settings, why, and any warning you gave. Repeat that they
    can adjust any of it later in `.github/autotriage.conf`, and the schedule
    in `.github/workflows/autotriage.yml`.
-3. What you filled in, with one line of evidence each.
+3. What you filled in, with one line of evidence each, and the style they
+   chose.
 4. The setup checklist `setup.sh` printed, and its "Anthropic API key"
    note. If the key isn't set, give them the link it printed. Don't offer
    to set the key yourself; they paste it in their own terminal.

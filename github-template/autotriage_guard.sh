@@ -24,6 +24,7 @@ done
 ! matches_any none "${merge_kinds[@]}" || fail "merging is off (merge = none in $conf)"
 [[ "$merge_method" =~ ^(squash|merge|rebase)$ ]] || fail "bad merge_method '$merge_method'"
 [[ "$max_changed_lines" =~ ^[0-9]+$ ]] || fail "bad max_changed_lines '$max_changed_lines'"
+[[ "$allow_no_ci" =~ ^(yes|no)$ ]] || fail "bad allow_no_ci '$allow_no_ci'"
 [[ -n "$base_branch" ]] || base_branch=$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)
 
 # Fetch the PR.
@@ -100,9 +101,31 @@ while IFS= read -r f; do
   ! matches_any "$f" ${protected[@]+"${protected[@]}"} || fail "touches protected file $f"
 done <<<"$files"
 
-# Check tests ran.
+# True if the repo has CI of its own: a workflow besides autotriage's, or
+# another CI service's config.
+has_ci() {
+  local f
+  for f in "$here"/workflows/*.yml "$here"/workflows/*.yaml; do
+    [[ -e "$f" ]] || continue
+    case "${f##*/}" in
+      autotriage.yml | autofix.yml | upgrade-dependencies.yml) ;;
+      *) return 0 ;;
+    esac
+  done
+  for f in .travis.yml .circleci .gitlab-ci.yml azure-pipelines.yml appveyor.yml \
+    .appveyor.yml Jenkinsfile .buildkite .drone.yml bitbucket-pipelines.yml; do
+    [[ -e "$here/../$f" ]] && return 0
+  done
+  return 1
+}
+
+# Check tests ran. With allow_no_ci, a repo with no CI at all may merge on
+# review alone; any CI in the repo means checks are required.
 n_checks=$(jq '.statusCheckRollup | length' <<<"$info")
-[[ "$n_checks" -gt 0 ]] || fail "no CI checks have run"
+if [[ "$n_checks" -eq 0 ]]; then
+  [[ "$allow_no_ci" == yes ]] || fail "no CI checks have run"
+  ! has_ci || fail "no CI checks have run, and this repo has CI"
+fi
 # Check tests passed.
 bad=$(jq -r '.statusCheckRollup[]
   | (((.conclusion // "") | if . == "" then null else . end) // .status // .state) as $r

@@ -1,41 +1,73 @@
 # autotriage-generic
 
-Generate an AI auto-triage configuration for github.
+Generate an AI auto-triage configuration for GitHub.
 
-### Step 1. Generate files
 
-Run `setup.sh` (either with your agent or as a script):
+## Step 1: Generate files
+### Option A. Generate files entirely with an agent
+
+Run `setup.sh` through your agent, from this directory:
+
+```markdown
+Read CUSTOMIZE.md and walk me through setting up autotriage for OWNER/REPO
+```
+
+
+
+
+
+### Option B. Generate manually and refine with an agent/manually
+
+
+#### Step B1:
+
+Run
+
+```sh
+./setup.sh --repo OWNER/REPO --mode normal --maintainer @someone
+```
 
 `setup.sh --help` will tell you more. Important parameters are
 
 - `--repo OWNER/REPO` (required): Example, `hackingmaterials/matminer`.
 - `--mode`: A preset list of options and scripts that can be set easily, refined
   later. Values are `conservative`, `normal`, and `mayhem`.
-- `--maintainer`: Maintainers which will be tagged in issues.
+- `--maintainer`: Maintainers the bot tags when it escalates. The first is the
+  default; repeat the option to list more.
 
-### Step 2: Customize further
+The files go to `output/REPO/.github/`.
+
+##### Step B2: Customize further
 
 Either:
 
-- have your agent guide you through `CUSTOMIZE.md`
-- edit `output/REPO/.github/autotriage_rules.md` yourself
+- have your agent guide you through `CUSTOMIZE.md`, using the prompt `setup.sh`
+  prints at the end
+- edit `output/REPO/.github/autotriage_rules.md` (and `autotriage.conf` for
+  settings) yourself
 
-### Step 3: Put in your repo
+## Step 3: Put in your repo
 
-Copy the resulting `.github` (in `output/REPO/.github/`) to your repository.
+Copy the contents of `output/REPO/.github/` into your repository's `.github/`,
+and merge it into your default branch (usually `main`). Nothing runs until it
+is there.
 
-Ensure your key `ANTHROPIC_API_KEY` is set.
+Ensure your key `ANTHROPIC_API_KEY` is set as a repository secret. `setup.sh`
+checks this and offers to set it. In `normal` and `mayhem` modes, also install
+the [Claude GitHub App](https://github.com/apps/claude) on the repo and add a
+`PAT` secret. `setup.sh` prints the full checklist, with links.
 
 ## How does it work?
 
 This configurator creates
 
-1. A workflow for github
-2. deterministic gates (scripts) which prevents the agent from doing crazy stuff
-   (e.g., automerging) if desired.
+1. Workflows for GitHub Actions
+2. deterministic gates (scripts) which prevent the agent from doing crazy stuff
+   (e.g., merging or committing what the mode doesn't allow).
 3. agent behavior in an md file.
+4. settings, including the mode, in `autotriage.conf`.
 
-The agent takes code-changing action through the scripts. The rest of the agents
-behavior, such as when it takes action, how, and what is says, is set in the 
-`md` file. 
-
+The agent takes code-changing action (merges and commits) through the scripts.
+The rest of the agent's behavior, such as when it takes action, how, and what
+it says, is set in the `md` file. Change the mode and settings later in
+`autotriage.conf`.

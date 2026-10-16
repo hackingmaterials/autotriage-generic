@@ -23,6 +23,8 @@
 #   --install-command CMD   how autofix installs the package
 #                           [python -m pip install -e ".[tests]" pytest]
 #   --pip-tools             add the weekly pip-tools dependency upgrade workflow
+#   --allow-no-ci           let the bot merge on its own review if the repo
+#                           has no CI at all (ignored once it has any CI)
 #
 # Modes:
 #   conservative  Code review only: comments, labels, escalations.
@@ -88,6 +90,7 @@ autofix=on
 test_cmd=""
 install_cmd=""
 pip_tools=false
+allow_no_ci=no
 repo=""
 maintainers=()
 while [[ $# -gt 0 ]]; do
@@ -101,6 +104,7 @@ while [[ $# -gt 0 ]]; do
     --test-command) need "$@"; test_cmd="$2"; shift 2 ;;
     --install-command) need "$@"; install_cmd="$2"; shift 2 ;;
     --pip-tools) pip_tools=true; shift ;;
+    --allow-no-ci) allow_no_ci=yes; shift ;;
     --repo) need "$@"; repo="$2"; shift 2 ;;
     -h | --help) usage ;;
     *) die "unknown option '$1' (see --help)" ;;
@@ -166,7 +170,13 @@ if [[ "$pip_tools" == true ]]; then files+=(workflows/upgrade-dependencies.yml);
 
 # Copy into a fresh output folder. It becomes the repository's .github/, so
 # paths below are relative to that.
-rm -rf "$out"
+previous=""
+if [[ -d "$out" ]]; then
+  # Keep the last run's files, which may have been edited since.
+  rm -rf "$out.previous"
+  mv "$out" "$out.previous"
+  previous="$rel.previous"
+fi
 mkdir -p "$out/workflows"
 cd "$out"
 for f in "${files[@]}"; do cp "$src/$f" "$f"; done
@@ -179,6 +189,7 @@ conf=autotriage.conf
 set_line "$conf" "mode = " "mode = $mode"
 set_line "$conf" "max_prs_per_run = " "max_prs_per_run = $max_prs"
 set_line "$conf" "mentions = " "mentions = $mentions"
+set_line "$conf" "allow_no_ci = " "allow_no_ci = $allow_no_ci"
 if [[ "$mode" != conservative && "$autofix" == off ]]; then set_line "$conf" "# autofix = off" "autofix = off"; fi
 
 wf=workflows/autotriage.yml
@@ -292,7 +303,10 @@ field "Mode" "$mode"
 field "Sweeps open PRs" "$when"
 field "PRs per sweep" "up to $max_prs"
 field "@claude mentions" "$mentions"
-if [[ "$mode" != conservative ]]; then field "@claude fix" "$autofix"; fi
+if [[ "$mode" != conservative ]]; then
+  field "@claude fix" "$autofix"
+  field "Merge without CI" "$allow_no_ci (only if the repo has no CI at all)"
+fi
 field "Escalates to" "${maintainers[0]}$me_note"
 if [[ ${#maintainers[@]} -gt 1 ]]; then field "Other maintainers" "$others"; fi
 
@@ -340,6 +354,9 @@ step "Run it once by hand and read the summary:" \
   "gh workflow run autotriage -R $repo"
 
 section "Notes"
+if [[ -n "$previous" ]]; then
+  note "The files from your last run, with any edits, are in $previous/. Copy back anything you want to keep."
+fi
 note "If $repo already has other workflows that run Claude, make sure they don't answer the same @claude comments."
 note "If you rerun setup.sh with a different mode, delete autotriage files the new mode no longer lists from the repo."
 if [[ -n "$lint_note" ]]; then note "$lint_note"; fi
@@ -365,14 +382,14 @@ if $have_gh && names=$(gh secret list -R "$repo" --json name --jq '.[].name' 2>/
         cmd "$new_secret"
       fi
     else
-      echo "    Add it here, or with gh:"
+      echo "    Add it yourself, on this page or with gh in your own terminal:"
       cmd "$new_secret"
       cmd "gh secret set ANTHROPIC_API_KEY -R $repo"
     fi
   fi
 else
   note "Couldn't check $repo's secrets (gh isn't installed or logged in, or you lack access)."
-  echo "    If ANTHROPIC_API_KEY isn't set yet, add it here:"
+  echo "    If ANTHROPIC_API_KEY isn't set yet, add it yourself on this page:"
   cmd "$new_secret"
 fi
 
@@ -383,3 +400,14 @@ printf '  %s▶ NOW RUN THIS IN YOUR AGENT:%s\n\n' "$bold$yellow" "$reset"
 printf '    %sRead CUSTOMIZE.md and walk me through customizing the autotriage files in %s for %s. I already ran setup.sh.%s\n' \
   "$bold$green" "$rel" "$repo" "$reset"
 printf '\n%s%s%s\n' "$bold$magenta" "$bar" "$reset"
+
+# When an agent (or anything non-interactive) runs this, say plainly which
+# steps are the person's.
+if [[ ! -t 0 ]]; then
+  echo
+  echo "Note for AI agents running this script: the steps under \"To install\" and"
+  echo "\"Anthropic API key\" are for the person to do themselves. Show them these"
+  echo "steps and links; don't run them. Never ask the person to paste an API key or"
+  echo "token into the chat: they set it in their own terminal or on the web page."
+  echo "To tailor the files, follow CUSTOMIZE.md."
+fi

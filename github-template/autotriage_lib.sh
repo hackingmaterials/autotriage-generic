@@ -31,6 +31,7 @@ load_conf() {
   mentions=on
   # Merging (autotriage_guard.sh).
   merge_kinds=()
+  allow_no_ci=no
   base_branch=""
   merge_method=squash
   max_changed_lines=0
@@ -57,6 +58,7 @@ load_conf() {
       max_prs_per_run) max_prs_per_run="$value" ;;
       mentions) mentions="$value" ;;
       merge) merge_kinds+=("$value") ;;
+      allow_no_ci) allow_no_ci="$value" ;;
       base_branch) base_branch="$value" ;;
       merge_method) merge_method="$value" ;;
       max_changed_lines) max_changed_lines="$value" ;;
