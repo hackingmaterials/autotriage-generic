@@ -104,12 +104,16 @@ jobs:
           sparse-checkout: .github
           persist-credentials: false
       - name: Check the mode allows bot changes
+        env:
+          KIND: ${{ steps.target.outputs.kind }}
         run: |
           echo "/.autotriage-trusted/" >>.git/info/exclude
           source .autotriage-trusted/.github/autotriage_lib.sh
           load_conf .autotriage-trusted/.github/autotriage.conf
-          [[ "$mode" != conservative && "$autofix" == on ]] ||
-            fail "mode is $mode and autofix is $autofix, so the bot makes no changes"
+          on="$autofix_issues"
+          [[ "$KIND" != PR ]] || on="$autofix_prs"
+          [[ "$mode" != conservative && "$on" == on ]] ||
+            fail "mode is $mode and autofix for this $KIND is $on, so the bot makes no changes"
 
       # CUSTOMIZE: install the package and what its tests need.
       - uses: actions/setup-python@v5

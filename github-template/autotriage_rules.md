@@ -24,6 +24,8 @@ act as `conservative`.
   own PRs included. Rule 1 shrinks to its "every mode" list.
 
 The rest of that file refines the mode, e.g. which kinds of PR may merge.
+`merge_own_fixes = yes` or `no` there overrides whether the bot's own
+`autofix/*` PRs may merge.
 
 ## Repository profile
 
@@ -177,9 +179,9 @@ it. If it refuses for another reason, go on to the next rule.
     fix needs a regression test that would fail without the fix.
   - **`reviewed`:** any other PR that got past rule 1 and that you are 90%+
     confident is correct and complete. It may lack new tests.
-- It isn't from an `autofix/*` branch, unless the mode is mayhem. In normal
-  mode, escalate those to the maintainer who asked for the fix; the PR body
-  names them.
+- It isn't from an `autofix/*` branch, unless `merge_own_fixes` is `yes`
+  (the default only in mayhem). Otherwise, escalate those to the maintainer
+  who asked for the fix; the PR body names them.
 - The description matches the diff
 - CI is green, and it actually tested this change:
   - Zero checks is not green, except when `allow_no_ci = yes` in

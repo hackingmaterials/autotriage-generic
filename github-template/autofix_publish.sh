@@ -4,7 +4,8 @@
 # run it. Settings, including the mode, live in autotriage.conf next to it.
 #
 # For an issue: commit to autofix/issue-<n> and open a PR that fixes it
-# (a draft, except in mayhem mode). For a PR: add one commit to its branch.
+# (a draft, unless merge_own_fixes = yes). For a PR: add one commit to its
+# branch.
 #
 # Usage: autofix_publish.sh <issue-or-PR-number> <requested-by> <dir>
 #   <dir> holds base.sha, the commit Claude started from, and autofix.patch
@@ -28,8 +29,9 @@ who="#$number"
 # Read and check the settings.
 load_conf "$here/autotriage.conf"
 [[ "$mode" != conservative ]] || fail "mode is conservative, so the bot never commits"
-[[ "$autofix" =~ ^(on|off)$ ]] || fail "bad autofix '$autofix'"
-[[ "$autofix" == on ]] || fail "autofix is off in autotriage.conf"
+[[ "$autofix_prs" =~ ^(on|off)$ ]] || fail "bad autofix_prs '$autofix_prs'"
+[[ "$autofix_issues" =~ ^(on|off)$ ]] || fail "bad autofix_issues '$autofix_issues'"
+[[ "$merge_own_fixes" =~ ^(yes|no)$ ]] || fail "bad merge_own_fixes '$merge_own_fixes'"
 [[ "$autofix_max_files" =~ ^[0-9]+$ ]] || fail "bad autofix_max_files '$autofix_max_files'"
 [[ "$autofix_max_changed_lines" =~ ^[0-9]+$ ]] || fail "bad autofix_max_changed_lines '$autofix_max_changed_lines'"
 
@@ -39,6 +41,11 @@ info=$(gh api "repos/{owner}/{repo}/issues/$number")
 title=$(jq -r .title <<<"$info")
 target="issue"
 [[ $(jq 'has("pull_request")' <<<"$info") == false ]] || target="pr"
+if [[ "$target" == pr ]]; then
+  [[ "$autofix_prs" == on ]] || fail "autofix_prs is off in autotriage.conf"
+else
+  [[ "$autofix_issues" == on ]] || fail "autofix_issues is off in autotriage.conf"
+fi
 
 summary=$(cat "$dir/summary.md" 2>/dev/null || true)
 [[ -n "$summary" ]] || summary="**Bottom line up front:** The autofix bot left no write-up; see the workflow run."
@@ -157,13 +164,13 @@ git switch -q -C "$branch" "$base"
 commit "Fix #$number: $title"
 git push -q --force-with-lease="$branch:$old" origin "$branch"
 
-# Open a PR, or update the one already open for this branch. Only mayhem
-# mode opens it ready to merge; otherwise it's a draft for a person.
+# Open a PR, or update the one already open for this branch. Only
+# merge_own_fixes = yes opens it ready to merge; otherwise it's a draft.
 draft=(--draft)
 note="A maintainer must review it and mark it ready; the bot never merges its own PRs."
-if [[ "$mode" == mayhem ]]; then
+if [[ "$merge_own_fixes" == yes ]]; then
   draft=()
-  note="In mayhem mode the bot may merge it once CI passes and its review finds nothing to escalate."
+  note="With merge_own_fixes = yes the bot may merge it once CI passes and its review finds nothing to escalate."
 fi
 body="$summary
 
