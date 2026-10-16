@@ -240,27 +240,64 @@ if command -v actionlint >/dev/null; then
   actionlint "${wfs[@]}" || lint_note="actionlint reported the problems above; check them."
 fi
 
-# Report.
+# Report. Colors only on a terminal, and never with NO_COLOR set.
+if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
+  bold=$'\033[1m' reset=$'\033[0m'
+  cyan=$'\033[36m' green=$'\033[32m' yellow=$'\033[33m' magenta=$'\033[35m'
+else
+  bold="" reset="" cyan="" green="" yellow="" magenta=""
+fi
+
+# Print $2, $1 times.
+repeat() {
+  local i
+  for ((i = 0; i < $1; i++)); do printf '%s' "$2"; done
+}
+# A section header, 72 columns wide.
+section() {
+  printf '\n%s━━ %s %s%s\n\n' "$bold$cyan" "$1" "$(repeat $((68 - ${#1})) ━)" "$reset"
+}
+# A label and its value.
+field() { printf '  %-18s %s\n' "$1" "$2"; }
+# A command or link, on its own line.
+cmd() { printf '     %s%s%s\n' "$green" "$1" "$reset"; }
+# Something to watch out for.
+note() { printf '  %s!%s %s\n' "$bold$yellow" "$reset" "$1"; }
+# A numbered step, then any commands or links for it.
+n=1
+step() {
+  printf '  %s%d.%s %s\n' "$bold" "$n" "$reset" "$1"
+  shift
+  local c
+  for c in "$@"; do cmd "$c"; done
+  n=$((n + 1))
+}
+
 case "$cron" in
   weekdays) when="weekdays at 9am Pacific" ;;
   daily) when="daily at 9am Pacific" ;;
   weekly) when="Mondays at 9am Pacific" ;;
   6h) when="every 6 hours" ;;
-  never) when="never on a schedule (only when tagged or run by hand)" ;;
-  *) when="on cron \"$cron_expr\" (UTC)" ;;
+  never) when="never (only when tagged or run by hand)" ;;
+  *) when="cron \"$cron_expr\" (UTC)" ;;
 esac
-echo "Made autotriage files for $repo, in $mode mode, in $rel:"
-for f in "${files[@]}"; do echo "  $f"; done
-echo
-echo "Settings:"
-echo "  Sweeps open PRs $when, acting on up to $max_prs per sweep."
-echo "  Maintainers can tag @claude: $mentions."
-if [[ "$mode" != conservative ]]; then echo "  \"@claude fix\": $autofix."; fi
-echo "  Escalates to ${maintainers[0]}$me_note."
-echo
-cat <<'EOF'
-What each mode allows:
+url="https://github.com/$repo"
 
+section "Files"
+printf '  Made for %s%s%s, in %s:\n\n' "$bold" "$repo" "$reset" "$rel/"
+for f in "${files[@]}"; do echo "    $f"; done
+
+section "Settings"
+field "Mode" "$mode"
+field "Sweeps open PRs" "$when"
+field "PRs per sweep" "up to $max_prs"
+field "@claude mentions" "$mentions"
+if [[ "$mode" != conservative ]]; then field "@claude fix" "$autofix"; fi
+field "Escalates to" "${maintainers[0]}$me_note"
+if [[ ${#maintainers[@]} -gt 1 ]]; then field "Other maintainers" "$others"; fi
+
+section "Modes"
+cat <<'EOF'
   |                                                       | conservative | normal       | mayhem     |
   |-------------------------------------------------------|--------------|--------------|------------|
   | Review PRs: comment, label, escalate                  | yes          | yes          | yes        |
@@ -271,77 +308,78 @@ What each mode allows:
   | Merge its own fixes                                   | no           | no           | yes        |
   | Always escalate security, cost, protected files,      | yes          | yes          | yes        |
   | domain risk areas                                     |              |              |            |
-
-You can adjust any of this later: the mode and other settings are lines in
-.github/autotriage.conf, and the sweep schedule is the cron line in
-.github/workflows/autotriage.yml. Conservative mode always wins: it stops
-every merge and commit.
 EOF
-echo
-echo "To install:"
-n=1
-step() {
-  echo "  $n. $1"
-  n=$((n + 1))
-}
-step "Copy the folder's contents into .github/ in your $repo checkout. Files with the same names are replaced: cp -R $rel/. path/to/${repo#*/}/.github/"
-step "Merge it into your default branch (usually main), through a PR or directly. Nothing runs until it is there: GitHub only runs scheduled and comment-triggered workflows from the default branch."
-url="https://github.com/$repo"
+printf '\n  These files use %s%s%s mode.\n\n' "$bold" "$mode" "$reset"
+printf '  %sYou can adjust any of this later:%s the mode and other settings are\n' "$bold" "$reset"
+echo "  lines in .github/autotriage.conf, and the sweep schedule is the cron line"
+echo "  in .github/workflows/autotriage.yml. Conservative mode always wins: it"
+echo "  stops every merge and commit."
+
+section "To install"
+step "Copy the folder's contents into .github/ in your $repo checkout (files with the same names are replaced):" \
+  "cp -R $rel/. path/to/${repo#*/}/.github/"
+step "Merge it into your default branch (usually main), through a PR or directly. ${bold}Nothing runs until it is there:${reset} GitHub only runs scheduled and comment-triggered workflows from the default branch."
 if [[ "$mode" != conservative ]]; then
-  step "Install the Claude GitHub App on $repo; the bot merges and commits with its token: https://github.com/apps/claude"
+  step "Install the Claude GitHub App on $repo; the bot merges and commits with its token:" \
+    "https://github.com/apps/claude"
 fi
 if [[ "$mode" != conservative || "$pip_tools" == true ]]; then
-  step "Add a PAT secret, so CI runs on the bot's PRs and commits: $url/settings/secrets/actions/new or gh secret set PAT -R $repo"
+  step "Add a PAT secret, so CI runs on the bot's PRs and commits:" \
+    "$url/settings/secrets/actions/new" "or: gh secret set PAT -R $repo"
 fi
-step "Turn off \"Allow GitHub Actions to create and approve pull requests\": $url/settings/actions"
+step "Turn off \"Allow GitHub Actions to create and approve pull requests\":" \
+  "$url/settings/actions"
 if [[ "$mode" != conservative ]]; then
-  step "Protect the default branch: require PRs, with your test jobs as required status checks: $url/settings/branches"
+  step "Protect the default branch: require PRs, with your test jobs as required status checks:" \
+    "$url/settings/branches"
 fi
 if [[ -f workflows/autofix.yml && ( -z "$test_cmd" || -z "$install_cmd" ) ]]; then
-  step "Check TEST_COMMAND and the install step in .github/workflows/autofix.yml match your CI."
+  step "Check that TEST_COMMAND and the install step in .github/workflows/autofix.yml match your CI."
 fi
-step "Run it once by hand and read the summary: gh workflow run autotriage -R $repo"
-echo
-echo "If $repo already has other workflows that run Claude, make sure they don't"
-echo "answer the same @claude comments. If you rerun setup.sh with a different mode,"
-echo "delete autotriage files the new mode no longer lists from the repo."
-if [[ -n "$lint_note" ]]; then
-  echo
-  echo "$lint_note"
-fi
+step "Run it once by hand and read the summary:" \
+  "gh workflow run autotriage -R $repo"
+
+section "Notes"
+note "If $repo already has other workflows that run Claude, make sure they don't answer the same @claude comments."
+note "If you rerun setup.sh with a different mode, delete autotriage files the new mode no longer lists from the repo."
+if [[ -n "$lint_note" ]]; then note "$lint_note"; fi
 
 # The API key: check the repo has it, and offer to set it.
-echo
-echo "Anthropic API key:"
-new_secret="https://github.com/$repo/settings/secrets/actions/new"
+section "Anthropic API key"
+new_secret="$url/settings/secrets/actions/new"
 names=""
 if $have_gh && names=$(gh secret list -R "$repo" --json name --jq '.[].name' 2>/dev/null); then
   if grep -qx ANTHROPIC_API_KEY <<<"$names"; then
-    echo "  ANTHROPIC_API_KEY is already set on $repo."
+    printf '  %s✓%s ANTHROPIC_API_KEY is already set on %s.\n' "$bold$green" "$reset" "$repo"
   else
-    echo "  $repo has no ANTHROPIC_API_KEY secret (fine if it's an organization secret)."
+    note "$repo has no ANTHROPIC_API_KEY secret (fine if it's an organization secret)."
     answer=""
     if [[ -t 0 ]]; then
-      read -r -p "  Set it now? gh will ask you to paste the key, and won't show it. [y/N] " answer
+      read -r -p "    Set it now? gh will ask you to paste the key, and won't show it. [y/N] " answer
     fi
     if [[ "$answer" =~ ^[Yy] ]]; then
       if gh secret set ANTHROPIC_API_KEY -R "$repo"; then
-        echo "  Set."
+        printf '  %s✓%s Set.\n' "$bold$green" "$reset"
       else
-        echo "  That didn't work. Add it at $new_secret"
+        note "That didn't work. Add it here:"
+        cmd "$new_secret"
       fi
     else
-      echo "  Add it at $new_secret, or run: gh secret set ANTHROPIC_API_KEY -R $repo"
+      echo "    Add it here, or with gh:"
+      cmd "$new_secret"
+      cmd "gh secret set ANTHROPIC_API_KEY -R $repo"
     fi
   fi
 else
-  echo "  Couldn't check $repo's secrets (gh isn't installed or logged in, or you"
-  echo "  lack access). If ANTHROPIC_API_KEY isn't set yet, add it at $new_secret"
+  note "Couldn't check $repo's secrets (gh isn't installed or logged in, or you lack access)."
+  echo "    If ANTHROPIC_API_KEY isn't set yet, add it here:"
+  cmd "$new_secret"
 fi
 
-# How to tailor the files with an agent.
-echo
-echo "Now run this in your agent:"
-echo
-echo "  Read CUSTOMIZE.md and walk me through customizing the autotriage files in"
-echo "  $rel for $repo. I already ran setup.sh."
+# The next step, impossible to miss.
+bar=$(repeat 72 ━)
+printf '\n%s%s%s\n\n' "$bold$magenta" "$bar" "$reset"
+printf '  %s▶ NOW RUN THIS IN YOUR AGENT:%s\n\n' "$bold$yellow" "$reset"
+printf '    %sRead CUSTOMIZE.md and walk me through customizing the autotriage files in %s for %s. I already ran setup.sh.%s\n' \
+  "$bold$green" "$rel" "$repo" "$reset"
+printf '\n%s%s%s\n' "$bold$magenta" "$bar" "$reset"
