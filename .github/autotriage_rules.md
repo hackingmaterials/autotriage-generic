@@ -30,14 +30,10 @@ The rest of that file refines the mode, e.g. which kinds of PR may merge.
 ## Repository profile
 
 - Repository: hackingmaterials/autotriage-generic: Common resource for creating automated AI triage across repositories 
-- Activity: active (last human merge 2026-10-16, #1 by @ardunn). Expect
-  escalations to be answered, but still make summaries self-contained.
-- Related repositories: no upstream. This repo is a generator: `setup.sh`
-  copies `github-template/` into other repos' `.github/`. Those copies are
-  frozen; a change here reaches a repo only when someone reruns `setup.sh`
-  for it and copies the output in. The rules were drawn from PRs in the repos
-  named in `RESEARCH.md`.
-- AI policy: none (nothing in the repo, and there is no `hackingmaterials/.github`).
+- Activity: not assessed yet. Escalations may wait a while, so make
+  summaries self-contained.
+- Related repositories: none listed yet.
+- AI policy: none listed yet.
 
 ## Maintainers
 
@@ -52,35 +48,20 @@ includes read-only users, and MEMBER includes anyone in the organization.
   Prefer this list over CODEOWNERS, which may be stale.
   - None listed yet; tag the default maintainer.
 - Other maintainers. Their commands count, but don't tag them by default:
-  @computron, @utf
+  none listed yet
 
 ## Domain risk areas
 
 Any change to these is escalated (rule 1) in every mode, however small.
 
-- `github-template/autotriage_guard.sh`: the merge gate. The only thing
-  stopping the triage bot merging what its mode doesn't allow.
-- `github-template/autofix_publish.sh`: the commit gate for `@claude fix`.
-- `github-template/autotriage_lib.sh`: `load_conf` and glob matching, which
-  both gates use. A parsing change can silently loosen `protected`,
-  `block_label`, or the mode (a missing or bad mode must mean conservative).
-- `github-template/workflows/`: permissions, tokens, triggers, and the
-  maintainer check before any bot runs, all copied into other repos.
-- `github-template/autotriage.conf`: defaults every new repo inherits
-  (`protected` patterns, size limits, `merge_method`).
-- `github-template/autotriage_rules.md`, `github-template/autofix_rules.md`,
-  `CUSTOMIZE.md`: instructions for AI agents. These are prompts, not docs.
-- `setup.sh`: rewrites the templates per mode, including the conservative
-  token and permission swap in `workflows/autotriage.yml`, and checks
-  for leftover `{{` placeholders.
+- None listed yet. Until some are, treat any change to formulas, constants,
+  units, default parameters, or data files as a domain risk area.
 
 ## Contribution requirements
 
 Besides tests for every behavior change, contributions to this repo must:
 
-- Put tests in `tests/` as bash scripts (`tests/*.sh`), runnable offline.
-  `.github/check_shell.sh` runs them, after syntax-checking every `.sh` file
-  and running `setup.sh --help`. The repo has no other tests yet.
+- Nothing else listed yet.
 
 ## When a maintainer tags you
 
@@ -282,9 +263,7 @@ of this evidence the PR has, and whatever it lacks, in your summary.
   Values that users or trained models already depend on should get a new name,
   not new numbers under the old one.
 - **Downstream impact:** whether the repo's dependents produce different
-  results or break. Known dependents: hackingmaterials/matminer, which has
-  generated files in its `.github/`. For changes to `github-template/`, say
-  whether repos with existing copies need to rerun `setup.sh`.
+  results or break. Known dependents: none listed yet.
 - **Upstream bugs:** if the root cause is in a dependency, say so and suggest
   fixing it there rather than working around it.
 - **Authority:** decisions about domain behavior belong to the area owner.
@@ -326,12 +305,12 @@ _Automated review; a person should check it._
   large diff you read if you didn't read it all.
 - If a fix came from someone's issue comment, suggest crediting them.
 - Follow the AI policy above in the closing line.
+- Write formulas as LaTeX (`$...$`), not Unicode symbols.
 
 Style for this repo. This overrides the lines above, but never the
 one-sentence opening, which always stays:
 
-- Assume contributors are experienced: most are maintainers of other repos
-  adopting autotriage. Skip beginner explanations of git, GitHub, or CI.
+- Tone: aggressive and concise. 
 
 ## General conduct
 
