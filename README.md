@@ -95,6 +95,7 @@ says, is set in the `md` file. Change the mode and settings later in
 |---------------------------------------------------|-------------------------|-------------|----------------|------------------------------------|
 | Review PRs: comment, label, escalate              | ✅                      | ❌          | ✅             | $\color{green}\text{conservative}$ |
 | Answer "@claude" mentions                         | ✅                      | 🟡          | ✅             | $\color{green}\text{conservative}$ |
+| `"@claude sweep"` runs the PR sweep now             | ✅                      | 🟡          | ✅             | $\color{green}\text{conservative}$ |
 | Auto-merge dependency upgrades                    | ✅                      | ✅          | ✅             | $\color{yellow}\text{normal}$      |
 | Auto-merge docs and typo fixes                    | ✅                      | ✅          | ✅             | $\color{yellow}\text{normal}$      |
 | Auto-merge small code changes with tests          | ✅                      | ✅          | ✅             | $\color{yellow}\text{normal}$      |
