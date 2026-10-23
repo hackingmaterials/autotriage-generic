@@ -337,7 +337,7 @@ mode, which never merges or commits.
 
 | The person wants | Set |
 |---|---|
-| The bot to sweep more or less often | The `cron` line in `.github/workflows/autotriage.yml` |
+| The bot to sweep more or less often | The `cron` line in `.github/workflows/autotriage.yml`. A maintainer can also comment `@claude sweep` on any issue or PR to sweep now. |
 | More or fewer PRs handled per sweep | `max_prs_per_run` |
 | Maintainers unable to tag "@claude" | `mentions = off` |
 | Different kinds of PR merged | `merge = docs`, `deps`, `tested`, `reviewed`, or `none`. Repeat for several; the list replaces the mode's. |
