@@ -2,13 +2,19 @@
 
 Generate an AI auto-triage configuration for GitHub.
 
-
 It has three presets which may make it easier to use, these are:
+
 - conservative (bot just reviews)
 - normal (bot reviews everything, automerges small things)
 - mayhem (bot merges its own code)
 
-All are adjustable thru script or agent setup.
+Each mode gains capability over the one before it: ${\color{green}\text
+{conservative}} 
+\rightarrow {\color{yellow}\text{normal}} \rightarrow {\color{red}\text{mayhem}}$
+
+> [!TIP] 
+> **All modes are fully adjustable and tunable thru script or agent setup.**
+
 
 
 ## Step 1: Generate files
@@ -19,7 +25,8 @@ All are adjustable thru script or agent setup.
 Run `setup.sh` through your agent, from this directory, for your repo e.g.:
 
 ```markdown
-Read CUSTOMIZE.md and walk me through setting up autotriage for hackingmaterials/my_repo
+Read CUSTOMIZE.md and walk me through setting up autotriage for
+hackingmaterials/my_repo
 ```
 
 </details>
@@ -66,7 +73,7 @@ If the API key isn't set yet: `gh secret set ANTHROPIC_API_KEY -R OWNER/REPO`
 Run `/install-github-app` in Claude Code, from your repo, so the bot posts as
 `claude[bot]`. Skip its own workflows.
 
-## How does it work?
+## How does it work, and what can it do?
 
 This configurator creates
 
@@ -77,7 +84,34 @@ This configurator creates
 4. settings, including the mode, in `autotriage.conf`.
 
 The agent takes code-changing action (merges and commits) through the scripts.
-The rest of the agent's behavior, such as when it takes action, how, and what
-it says, is set in the `md` file. Change the mode and settings later in
+The rest of the agent's behavior, such as when it takes action, how, and what it
+says, is set in the `md` file. Change the mode and settings later in
 `autotriage.conf`.
+
+<details>
+<summary><b>What the bot can do (expand me)</b></summary>
+
+| Ability                                           | Bot able, if configured | Script gate | `.md` guidance | In preset by default               |
+|---------------------------------------------------|-------------------------|-------------|----------------|------------------------------------|
+| Review PRs: comment, label, escalate              | ✅                      | ❌          | ✅             | $\color{green}\text{conservative}$ |
+| Answer "@claude" mentions                         | ✅                      | 🟡          | ✅             | $\color{green}\text{conservative}$ |
+| Auto-merge dependency upgrades                    | ✅                      | ✅          | ✅             | $\color{yellow}\text{normal}$      |
+| Auto-merge docs and typo fixes                    | ✅                      | ✅          | ✅             | $\color{yellow}\text{normal}$      |
+| Auto-merge small code changes with tests          | ✅                      | ✅          | ✅             | $\color{yellow}\text{normal}$      |
+| Auto-merge anything that passes CI and review     | ✅                      | ✅          | ✅             | $\color{red}\text{mayhem}$         |
+| `"@claude fix"` on a PR commits to it               | ✅                      | ✅          | ✅             | $\color{yellow}\text{normal}$      |
+| `"@claude fix"` on an issue opens a PR              | ✅                      | ✅          | ✅             | $\color{yellow}\text{normal}$      |
+| Merge its own fixes                               | ✅                      | ✅          | ✅             | $\color{red}\text{mayhem}$         |
+| Hand risky PRs to a maintainer instead of merging | ✅                      | ❌          | ✅             | $\color{green}\text{conservative}$ |
+| Close PRs or issues                               | 🟡  (only thru own PRs) | ✅          | ✅             | $\color{red}\text{mayhem}$         |
+| Fix code on a cron schedule                       | ❌                      | ✅          | ❌             |                                    |
+| Run code or tests (outside of CI)                 | ❌                      | ✅          | ❌             |                                    |
+| Merge PRs with failing CI                         | ❌                      | ✅          | ✅             |                                    |
+| Merge or commit protected files                   | ❌                      | ✅          | ✅             |                                    |
+| Commit to fork PRs or the default branch          | ❌                      | ✅          |                |                                    |
+| Act on requests from non-maintainers              | ❌                      | 🟡          | ✅             |                                    |
+| Approve PRs                                       | ❌                      | ❌          | ✅             |                                    |
+| Add or upgrade dependencies in its fixes          | ❌                      | 🟡          | ✅             |                                    |
+
+</details>
 
