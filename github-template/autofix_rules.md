@@ -43,6 +43,11 @@ or when the behavior looks intended or the issue is a duplicate.
 - Finish with `git status` and `git diff`; remove anything you didn't mean
   to change.
 
+Code style for this repo. This overrides the lines above, but never the
+"Never" list:
+
+- None listed yet.
+
 ## 3. Write the summary, then publish
 
 Always write `.autofix_summary.md` in the repo root, then run the publish

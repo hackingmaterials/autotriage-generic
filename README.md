@@ -11,7 +11,7 @@ Generate an AI auto-triage configuration for GitHub.
 Run `setup.sh` through your agent, from this directory:
 
 ```markdown
-Read CUSTOMIZE.md and walk me through setting up autotriage for OWNER/REPO
+Read CUSTOMIZE.md and walk me through setting up autotriage for $OWNER/$YOUR_REPO
 ```
 
 </details>
@@ -24,7 +24,7 @@ Read CUSTOMIZE.md and walk me through setting up autotriage for OWNER/REPO
 Run
 
 ```sh
-./setup.sh --repo OWNER/REPO --mode normal --maintainer @someone
+./setup.sh --repo $OWNER/$YOUR_REPO --mode normal --maintainer @someone
 ```
 
 `setup.sh --help` will tell you more. Important parameters are

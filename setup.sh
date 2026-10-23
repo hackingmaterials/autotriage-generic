@@ -17,7 +17,7 @@
 #                           daily, weekly, 6h, never, or a cron expression
 #                           in UTC [weekdays, 9am Pacific]
 #   --max-prs N             PRs each sweep may act on [5]
-#   --mentions on|off       maintainers can tag @claude on issues and PRs [on]
+#   --mentions on|off       maintainers can tag "@claude" on issues and PRs [on]
 #   --no-autofix            no "@claude fix" in normal or mayhem mode
 #   --pip-tools             add the weekly pip-tools dependency upgrade workflow
 #   --allow-no-ci           let the bot merge on its own review if the repo
@@ -279,9 +279,9 @@ section "Settings"
 field "Mode" "$mode"
 field "Sweeps open PRs" "$when"
 field "PRs per sweep" "up to $max_prs"
-field "@claude mentions" "$mentions"
+field '"@claude" mentions' "$mentions"
 if [[ "$mode" != conservative ]]; then
-  field "@claude fix" "$autofix"
+  field '"@claude fix"' "$autofix"
   field "Merge without CI" "$allow_no_ci (only if the repo has no CI at all)"
 fi
 field "Escalates to" "${maintainers[0]}$me_note"
@@ -328,7 +328,7 @@ section "Notes"
 if [[ -n "$previous" ]]; then
   note "The files from your last run, with any edits, are in $previous/. Copy back anything you want to keep."
 fi
-note "If $repo already has other workflows that run Claude, make sure they don't answer the same @claude comments."
+note "If $repo already has other workflows that run Claude, make sure they don't answer the same \"@claude\" comments."
 note "If you rerun setup.sh with a different mode, delete autotriage files the new mode no longer lists from the repo."
 if [[ -n "$lint_note" ]]; then note "$lint_note"; fi
 
