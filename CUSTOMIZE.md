@@ -167,19 +167,28 @@ Offer a default and accept "keep the default":
 Pass each handle they confirm as `--maintainer` in step 2, the escalation
 contact first.
 
-### The final question: style
+### The final question: comment style and code style
 
 Unless the person skipped the questions, always end with this one, even
 when the files already exist or the person seems in a hurry:
 
-> Last question: is there any style, or any particular change, you want in
-> how the bot writes its comments or its code? Here are the defaults;
-> "keep the defaults" is fine.
+> Last question: you can change two kinds of style, separately.
+>
+> 1. **Comment style:** how the bot writes its reviews and replies on PRs
+>    and issues.
+> 2. **Code style:** how the bot writes the code in its "@claude fix"
+>    changes.
+>
+> The defaults for each are below. Tell me any changes to comment style,
+> code style, or both, or say "keep the defaults".
 
-Show both tables. Show the code table only if "@claude fix" is on for
-issues or PRs; otherwise the bot never writes code.
+Then show both tables, each under its heading. If "@claude fix" is off
+for both issues and PRs, the bot never writes code: leave out item 2 and
+the code style table, and ask only about comment style.
 
-| Comments | Default |
+**Comment style**
+
+| Topic | Default |
 |---|---|
 | Tone | Concise and friendly |
 | Length | A one-sentence bottom line; everything else in collapsed Core issues, Fixes, and Questions sections |
@@ -191,7 +200,9 @@ issues or PRs; otherwise the bot never writes code.
 | Terms to use or avoid | The repo's own names for its parts, e.g. what it calls its plug-ins |
 | Anything maintainers dislike in bot comments | Nothing listed |
 
-| Code ("@claude fix") | Default |
+**Code style** (only for "@claude fix")
+
+| Topic | Default |
 |---|---|
 | Size | The smallest change that fixes the issue; on a PR, only what was asked |
 | Tests | A regression test for each issue fix, in the repo's test layout |
