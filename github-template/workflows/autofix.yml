@@ -162,6 +162,4 @@ jobs:
 
           - Common causes: the request wasn't from a maintainer, the mode is conservative, or the PR's branch is in a fork.
 
-          </details>
-
-          _Automated reply from the autofix bot._"
+          </details>"

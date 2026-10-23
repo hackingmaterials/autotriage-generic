@@ -196,7 +196,7 @@ the code style table, and ask only about comment style.
 | Language and spelling | English, matching the repo's docs |
 | Formulas and code | Formulas in LaTeX; code in fenced blocks |
 | Emoji | None |
-| Sign-off | One line saying it is an automated review a person should check, plus any wording the AI policy requires |
+| Sign-off | None, except any wording the AI policy requires |
 | Terms to use or avoid | The repo's own names for its parts, e.g. what it calls its plug-ins |
 | Anything maintainers dislike in bot comments | Nothing listed |
 

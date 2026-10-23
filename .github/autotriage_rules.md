@@ -293,18 +293,18 @@ One sentence, at most 20 words: the conclusion, and what you need from whom.
 - what you need answered, and by whom
 
 </details>
-
-_Automated review; a person should check it._
 ```
 
 - Start with that sentence, unlabeled: no "bottom line" label or heading.
   Answer a maintainer's question there.
-- Nothing outside that sentence, the sections, and the closing line.
+- Nothing outside that sentence and the sections, except an AI policy line
+  (below).
 - Short bullets, not paragraphs.
 - Under Core issues, link any issue the PR fixes, and say which part of a
   large diff you read if you didn't read it all.
 - If a fix came from someone's issue comment, suggest crediting them.
-- Follow the AI policy above in the closing line.
+- If the AI policy above requires wording in bot comments, add it as one
+  last line.
 - Write formulas as LaTeX (`$...$`), not Unicode symbols.
 
 Style for this repo. This overrides the lines above, but never the

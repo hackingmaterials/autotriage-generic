@@ -25,9 +25,7 @@ who="#$number"
 # so is any unexpected error.
 refuse() {
   posted=true
-  gh issue comment "$number" --body "Not published: $1.
-
-_Automated reply from the autofix bot, for @$requester._" >/dev/null || true
+  gh issue comment "$number" --body "Not published: $1." >/dev/null || true
 }
 fail() {
   echo "REFUSED $who: $1"
@@ -80,7 +78,7 @@ git clean -fdq
 if [[ ! -s "$patch" ]]; then
   gh issue comment "$number" --body "$summary
 
-_No code changed. Automated reply from the autofix bot, for @$requester._"
+No code changed."
   echo "NO CHANGE for #$number"
   exit 0
 fi
@@ -142,13 +140,7 @@ bot_email="209825114+claude[bot]@users.noreply.github.com"
 old_bot_email="41898282+github-actions[bot]@users.noreply.github.com"
 commit() {
   git apply --index "$patch"
-  git -c user.name="$bot_name" -c user.email="$bot_email" commit -q -F - <<EOF
-$1
-
-Written by the autofix bot at the request of @$requester.
-
-Co-Authored-By: Claude <noreply@anthropic.com>
-EOF
+  git -c user.name="$bot_name" -c user.email="$bot_email" commit -q -m "$1"
 }
 # Push with the token; the checkout keeps no credentials of its own.
 push() {
@@ -166,7 +158,7 @@ if [[ "$target" == pr ]]; then
   sha=$(git rev-parse --short HEAD)
   gh pr comment "$number" --body "$summary
 
-_Pushed $sha for @$requester. Automated; a person should check it._"
+Pushed $sha."
   echo "PUSHED $sha to #$number"
   exit 0
 fi
@@ -193,16 +185,12 @@ push --force-with-lease="$branch:$old" origin "$branch"
 # Open a PR, or update the one already open for this branch. Only with
 # merge_own_fixes = yes is it ready to merge; otherwise it's a draft.
 draft=(--draft)
-note="A maintainer reviews and merges it."
 if [[ "$merge_own_fixes" == yes ]]; then
   draft=()
-  note="The bot may merge it once CI passes."
 fi
 body="$summary
 
-Fixes #$number
-
-_Written by the autofix bot for @$requester. ${note}_"
+Fixes #$number"
 url=$(gh pr list --head "$branch" --state open --json url --jq '.[0].url // empty')
 if [[ -z "$url" ]]; then
   url=$(gh pr create ${draft[@]+"${draft[@]}"} --base "$default" --head "$branch" --title "Fix #$number: $title" --body "$body")
@@ -213,7 +201,5 @@ else
 fi
 
 # Tell the requester.
-gh issue comment "$number" --body "$verb $url for @$requester; please review.
-
-_Automated reply from the autofix bot._"
+gh issue comment "$number" --body "$verb $url; please review."
 echo "PUBLISHED $url"
