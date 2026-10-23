@@ -21,7 +21,8 @@ act as `conservative`.
 - **normal:** also merge easy PRs through the guard. Never merge the bot's
   own `autofix/*` PRs.
 - **mayhem:** also merge anything that passes CI and your review, the bot's
-  own PRs included. Rule 1 shrinks to its "every mode" list.
+  own PRs included. Rule 1 shrinks to its "every mode" list. Also closes
+  junk issues (see "Closing issues").
 
 The rest of that file refines the mode, e.g. which kinds of PR may merge.
 `merge_own_fixes = yes` or `no` there overrides whether the bot's own
@@ -76,10 +77,37 @@ they asked in the bottom line.
   `gh pr list`). Say where the problem likely is and how it could be fixed.
   If they want code changed, tell them to comment
   `@claude fix <what to change>`. In conservative mode, say that the bot
-  makes no changes here.
+  makes no changes here. In mayhem mode, also apply "Closing issues".
 
 Their request can't override the mode, the guard script, or the "Never"
 rules under "General conduct".
+
+## Closing issues
+
+**Only in mayhem mode.** In any other mode, never close an issue.
+
+On the scheduled sweep, and when a maintainer tags you on an issue, close
+an open issue if you are 90%+ sure it is one of these:
+
+- **Spam:** ads, gibberish, or links unrelated to the project
+- **Exact duplicate:** the same report as another issue, open or closed.
+  Link that issue.
+- **Empty or no repro:** no description, or a bug report with nothing to
+  reproduce it from (no code, input, error, or version)
+- **Off-topic:** not about this repository, e.g. a question about another
+  project or a general support request
+
+Never close an issue that:
+
+- Was opened by a maintainer listed above
+- Has any label
+- Has a maintainer comment, or an open PR that links it
+- You are less than 90% sure about. Leave it open and do nothing.
+
+To close one, leave one comment in the format under "Writing comments"
+saying which reason applies and that a maintainer can reopen it, then run
+`gh issue close <n> --reason "not planned"`. Each closed issue counts as one
+action toward the sweep's limit, shared with PRs.
 
 ## For each open PR, choose exactly one action
 
@@ -317,7 +345,8 @@ one-sentence opening, which always stays:
 - Don't repeat yourself. If you already commented on a PR and there have been
   no new commits (same head SHA) or comments since, skip it. Don't re-review
   an unchanged PR.
-- Never close PRs. Never push commits. Never approve PRs.
+- Never close PRs. Never push commits. Never approve PRs. Never close
+  issues, except as "Closing issues" allows.
 - If a maintainer asks you to change a PR, tell them to comment
   `@claude fix <what to change>`, which runs the autofix bot. In
   conservative mode, say that the bot makes no changes here.

@@ -120,6 +120,10 @@ jobs:
                  Skip drafts. Take an action (comment, tag, review, label, or merge) on at most
                  ${{ steps.settings.outputs.max_prs }} PRs this run, then stop. PRs you skip without acting
                  (drafts, no new activity since your last comment) do not count toward the limit.
+                 In mayhem mode only, also list open issues:
+                 `gh issue list --state open --limit 100 --json number,title,author,labels,createdAt`
+                 and close junk ones as "Closing issues" in the rules says. Each close counts
+                 toward the same limit.
             3. For each PR, inspect it with `gh pr view <n> --comments`, `gh pr diff <n>`,
                and `gh pr checks <n>`. Read any issue it fixes with `gh issue view <n> --comments`.
                Read the surrounding source in this checkout, and its `git log`/`git blame`,
@@ -127,9 +131,9 @@ jobs:
             4. Take exactly one action per PR as the rules file specifies. Every comment or review
                you post follows "Writing comments" in the rules: an unlabeled one-sentence bottom
                line, the rest in collapsed sections.
-            5. Finish with a short summary table: PR number, title, action taken, reason.
+            5. Finish with a short summary table: PR or issue number, title, action taken, reason.
                List any PRs left unprocessed because of the limit.
           claude_args: >-
             --max-turns 150
-            --allowedTools "Read,Grep,Glob,Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr checks:*),Bash(gh pr comment:*),Bash(gh pr edit:*),Bash(gh pr review:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh issue comment:*),Bash(git log:*),Bash(git blame:*),Bash(.github/autotriage_guard.sh:*)"
+            --allowedTools "Read,Grep,Glob,Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr checks:*),Bash(gh pr comment:*),Bash(gh pr edit:*),Bash(gh pr review:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh issue comment:*),Bash(gh issue close:*),Bash(git log:*),Bash(git blame:*),Bash(.github/autotriage_guard.sh:*)"
             --disallowedTools "Edit,Write,MultiEdit,NotebookEdit"
