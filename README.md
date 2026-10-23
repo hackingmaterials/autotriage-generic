@@ -10,29 +10,32 @@ It has three presets which may make it easier to use, these are:
 
 All are adjustable thru script or agent setup.
 
-## What the bot can do
+<details>
+<summary><b>What the bot can do</b></summary>
 
-| Ability                                           | Bot able, if configured | Script gate | `.md` guidance |
-|---------------------------------------------------|-------------------------|-------------|----------------|
-| Review PRs: comment, label, escalate              | ✅                      | ❌          | ✅             |
-| Answer "@claude" mentions                         | ✅                      | 🟡          | ✅             |
-| Auto-merge dependency upgrades                    | ✅                      | ✅          | ✅             |
-| Auto-merge docs and typo fixes                    | ✅                      | ✅          | ✅             |
-| Auto-merge small code changes with tests          | ✅                      | ✅          | ✅             |
-| Auto-merge anything that passes CI and review     | ✅                      | ✅          | ✅             |
-| "@claude fix" on a PR commits to it               | ✅                      | ✅          | ✅             |
-| "@claude fix" on an issue opens a PR              | ✅                      | ✅          | ✅             |
-| Merge its own fixes                               | ✅                      | ✅          | ✅             |
-| Hand risky PRs to a maintainer instead of merging | ✅                      | ❌          | ✅             |
-| Close PRs or issues                               | 🟡  (only thru own PRs) | ✅          | ✅             |
-| Fix code on a cron schedule                       | ❌                      | ✅          | ❌             |
-| Run code or tests (outside of CI)                 | ❌                      | ✅          | ❌             |
-| Merge PRs with failing CI                         | ❌                      | ✅          | ✅             |
-| Merge or commit protected files                   | ❌                      | ✅          | ✅             |
-| Commit to fork PRs or the default branch          | ❌                      | ✅          |                |
-| Act on requests from non-maintainers              | ❌                      | 🟡          | ✅             |
-| Approve PRs                                       | ❌                      | ❌          | ✅             |
-| Add or upgrade dependencies in its fixes          | ❌                      | 🟡          | ✅             |
+| Ability                                           | Bot able, if configured | Script gate | `.md` guidance | In preset by default               |
+|---------------------------------------------------|-------------------------|-------------|----------------|------------------------------------|
+| Review PRs: comment, label, escalate              | ✅                      | ❌          | ✅             | $\color{green}\text{conservative}$ |
+| Answer "@claude" mentions                         | ✅                      | 🟡          | ✅             | $\color{green}\text{conservative}$ |
+| Auto-merge dependency upgrades                    | ✅                      | ✅          | ✅             | $\color{yellow}\text{normal}$      |
+| Auto-merge docs and typo fixes                    | ✅                      | ✅          | ✅             | $\color{yellow}\text{normal}$      |
+| Auto-merge small code changes with tests          | ✅                      | ✅          | ✅             | $\color{yellow}\text{normal}$      |
+| Auto-merge anything that passes CI and review     | ✅                      | ✅          | ✅             | $\color{orange}\text{mayhem}$      |
+| `"@claude fix"` on a PR commits to it               | ✅                      | ✅          | ✅             | $\color{yellow}\text{normal}$      |
+| `"@claude fix"` on an issue opens a PR              | ✅                      | ✅          | ✅             | $\color{yellow}\text{normal}$      |
+| Merge its own fixes                               | ✅                      | ✅          | ✅             | $\color{orange}\text{mayhem}$      |
+| Hand risky PRs to a maintainer instead of merging | ✅                      | ❌          | ✅             | $\color{green}\text{conservative}$ |
+| Close PRs or issues                               | 🟡  (only thru own PRs) | ✅          | ✅             | $\color{orange}\text{mayhem}$      |
+| Fix code on a cron schedule                       | ❌                      | ✅          | ❌             |                                    |
+| Run code or tests (outside of CI)                 | ❌                      | ✅          | ❌             |                                    |
+| Merge PRs with failing CI                         | ❌                      | ✅          | ✅             |                                    |
+| Merge or commit protected files                   | ❌                      | ✅          | ✅             |                                    |
+| Commit to fork PRs or the default branch          | ❌                      | ✅          |                |                                    |
+| Act on requests from non-maintainers              | ❌                      | 🟡          | ✅             |                                    |
+| Approve PRs                                       | ❌                      | ❌          | ✅             |                                    |
+| Add or upgrade dependencies in its fixes          | ❌                      | 🟡          | ✅             |                                    |
+
+</details>
 
 ## Step 1: Generate files
 
