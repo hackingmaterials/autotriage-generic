@@ -3,15 +3,23 @@
 Generate an AI auto-triage configuration for GitHub.
 
 
+It has three presets which may make it easier to use, these are:
+- conservative (bot just reviews)
+- normal (bot reviews everything, automerges small things)
+- mayhem (bot merges its own code)
+
+All are adjustable thru script or agent setup.
+
+
 ## Step 1: Generate files
 
 <details>
 <summary><b>Option A. Generate files entirely with an agent</b></summary>
 
-Run `setup.sh` through your agent, from this directory:
+Run `setup.sh` through your agent, from this directory, for your repo e.g.:
 
 ```markdown
-Read CUSTOMIZE.md and walk me through setting up autotriage for $OWNER/$YOUR_REPO
+Read CUSTOMIZE.md and walk me through setting up autotriage for hackingmaterials/my_repo
 ```
 
 </details>
@@ -24,7 +32,7 @@ Read CUSTOMIZE.md and walk me through setting up autotriage for $OWNER/$YOUR_REP
 Run
 
 ```sh
-./setup.sh --repo $OWNER/$YOUR_REPO --mode normal --maintainer @someone
+./setup.sh --repo hackingmaterials/my_repo --mode normal --maintainer @someone
 ```
 
 `setup.sh --help` will tell you more. Important parameters are
@@ -72,3 +80,4 @@ The agent takes code-changing action (merges and commits) through the scripts.
 The rest of the agent's behavior, such as when it takes action, how, and what
 it says, is set in the `md` file. Change the mode and settings later in
 `autotriage.conf`.
+
