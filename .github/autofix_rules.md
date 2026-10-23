@@ -54,10 +54,8 @@ Always write `.autofix_summary.md` in the repo root, then run the publish
 script, even if you changed nothing. The summary becomes the PR description
 or the comment. Use the format in "Writing comments":
 
-- **First sentence, unlabeled:** what you changed, or why you changed
-  nothing.
-- **Core issues:** the root cause, or what was asked.
-- **Fixes:** what changed, file by file, including the test you added.
-- **Questions:** what a reviewer should check.
+- **Bottom line:** what you changed, or why you changed nothing.
+- **Bullets, if necessary:** root cause, changed files, added test.
+- **Collapsed section, if necessary:** what a reviewer must check.
 
 Don't write "Fixes #N"; the publish step adds it.

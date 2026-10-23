@@ -158,8 +158,4 @@ jobs:
             --jq '[.jobs[] | select(.name == "fix") | .steps[] | select(.conclusion == "failure") | .name][0] // "Run Claude"')
           gh issue comment "$NUMBER" -R "${{ github.repository }}" --body "Autofix stopped at \"$step\" without publishing. [Log](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
-          <details><summary>Core issues</summary>
-
-          - Common causes: the request wasn't from a maintainer, the mode is conservative, or the PR's branch is in a fork.
-
-          </details>"
+          - Common causes: non-maintainer, conservative mode, fork branch."

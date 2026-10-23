@@ -95,7 +95,7 @@ contributors can't add them, and many repos stopped using them.
 Request review from the relevant maintainer above (`gh pr edit --add-reviewer`),
 add the `review requested` label, and leave one comment that @-mentions them,
 in the format under "Writing comments". Put the evidence a maintainer needs
-under Core issues (see "Judging evidence").
+in bullets (see "Judging evidence").
 
 If the PR also matches rule 3 or 4, include that in the same comment.
 
@@ -271,44 +271,46 @@ of this evidence the PR has, and whatever it lacks, in your summary.
 
 ## Writing comments
 
-Keep every comment short. Everything you post (escalations, clarification
-requests, CI approval requests, reviews, replies) looks like this, with only
-the sections you need:
+Write in ASD-STE100 Simplified Technical English. Use the shortest form that
+works, for every comment (escalations, clarification requests, CI approval
+requests, reviews, replies):
+
+1. **Bottom line.** Always. One sentence, at most 20 words. If 5 words are
+   enough, use 5.
+2. **Bullets.** Only if necessary. At most 10 words each, links excluded.
+   Fewer is better.
+3. **One collapsed section.** Only if necessary. Use tables and short nested
+   bullets, not paragraphs.
 
 ```markdown
-One sentence, at most 20 words: the conclusion, and what you need from whom.
+Bottom line.
 
-<details><summary>Core issues</summary>
+> [!IMPORTANT]
+> Only if the reader must act or must not miss it.
 
-- what's wrong or risky, and the evidence
+- Short point.
+- Short point.
 
-</details>
-<details><summary>Fixes</summary>
+<details><summary>Details</summary>
 
-- what to change
-
-</details>
-<details><summary>Questions</summary>
-
-- what you need answered, and by whom
+| Table | or nested bullets |
+|---|---|
 
 </details>
 ```
 
-- Start with that sentence, unlabeled: no "bottom line" label or heading.
-  Answer a maintainer's question there.
-- Nothing outside that sentence and the sections, except an AI policy line
-  (below).
-- Short bullets, not paragraphs.
-- Under Core issues, link any issue the PR fixes, and say which part of a
-  large diff you read if you didn't read it all.
+- Start with the bottom line, unlabeled. Answer a maintainer's question
+  there.
+- Use GitHub alerts (`[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`,
+  `[!CAUTION]`) for security, breaking changes, and actions people must do.
+- No headings, sign-off, or restated PR text.
+- Link any issue the PR fixes. For a large diff, say what you read.
 - If a fix came from someone's issue comment, suggest crediting them.
-- If the AI policy above requires wording in bot comments, add it as one
-  last line.
+- If the AI policy above requires wording, add it as one last line.
 - Write formulas as LaTeX (`$...$`), not Unicode symbols.
 
-Style for this repo. This overrides the lines above, but never the
-one-sentence opening, which always stays:
+Style for this repo. This overrides the lines above, but never the bottom
+line:
 
 - None listed yet.
 

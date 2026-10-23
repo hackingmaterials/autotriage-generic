@@ -191,9 +191,10 @@ the code style table, and ask only about comment style.
 | Topic | Default |
 |---|---|
 | Tone | Concise and friendly |
-| Length | A one-sentence bottom line; everything else in collapsed Core issues, Fixes, and Questions sections |
+| Length | Bottom line only, if possible. Then bullets of 10 words max. Then one collapsed section, only if necessary |
 | Contributors | Assume many are first-time contributors |
-| Language and spelling | English, matching the repo's docs |
+| Language | ASD-STE100 Simplified Technical English; spelling matches the repo's docs |
+| Callouts | GitHub alerts ([!IMPORTANT] and similar) for must-read points |
 | Formulas and code | Formulas in LaTeX; code in fenced blocks |
 | Emoji | None |
 | Sign-off | None, except any wording the AI policy requires |
