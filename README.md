@@ -2,14 +2,37 @@
 
 Generate an AI auto-triage configuration for GitHub.
 
-
 It has three presets which may make it easier to use, these are:
+
 - conservative (bot just reviews)
 - normal (bot reviews everything, automerges small things)
 - mayhem (bot merges its own code)
 
 All are adjustable thru script or agent setup.
 
+## What the bot can do
+
+| Ability                                           | Bot able, if configured | Script gate | `.md` guidance |
+|---------------------------------------------------|-------------------------|-------------|----------------|
+| Review PRs: comment, label, escalate              | ✅                      | ❌          | ✅             |
+| Answer "@claude" mentions                         | ✅                      | 🟡          | ✅             |
+| Auto-merge dependency upgrades                    | ✅                      | ✅          | ✅             |
+| Auto-merge docs and typo fixes                    | ✅                      | ✅          | ✅             |
+| Auto-merge small code changes with tests          | ✅                      | ✅          | ✅             |
+| Auto-merge anything that passes CI and review     | ✅                      | ✅          | ✅             |
+| "@claude fix" on a PR commits to it               | ✅                      | ✅          | ✅             |
+| "@claude fix" on an issue opens a PR              | ✅                      | ✅          | ✅             |
+| Merge its own fixes                               | ✅                      | ✅          | ✅             |
+| Hand risky PRs to a maintainer instead of merging | ✅                      | ❌          | ✅             |
+| Close PRs or issues                               | 🟡  (only thru own PRs) | ✅          | ✅             |
+| Fix code on a cron schedule                       | ❌                      | ✅          | ❌             |
+| Run code or tests (outside of CI)                 | ❌                      | ✅          | ❌             |
+| Merge PRs with failing CI                         | ❌                      | ✅          | ✅             |
+| Merge or commit protected files                   | ❌                      | ✅          | ✅             |
+| Commit to fork PRs or the default branch          | ❌                      | ✅          |                |
+| Act on requests from non-maintainers              | ❌                      | 🟡          | ✅             |
+| Approve PRs                                       | ❌                      | ❌          | ✅             |
+| Add or upgrade dependencies in its fixes          | ❌                      | 🟡          | ✅             |
 
 ## Step 1: Generate files
 
@@ -19,7 +42,8 @@ All are adjustable thru script or agent setup.
 Run `setup.sh` through your agent, from this directory, for your repo e.g.:
 
 ```markdown
-Read CUSTOMIZE.md and walk me through setting up autotriage for hackingmaterials/my_repo
+Read CUSTOMIZE.md and walk me through setting up autotriage for
+hackingmaterials/my_repo
 ```
 
 </details>
@@ -77,7 +101,7 @@ This configurator creates
 4. settings, including the mode, in `autotriage.conf`.
 
 The agent takes code-changing action (merges and commits) through the scripts.
-The rest of the agent's behavior, such as when it takes action, how, and what
-it says, is set in the `md` file. Change the mode and settings later in
+The rest of the agent's behavior, such as when it takes action, how, and what it
+says, is set in the `md` file. Change the mode and settings later in
 `autotriage.conf`.
 
