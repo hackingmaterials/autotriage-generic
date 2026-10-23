@@ -108,7 +108,7 @@ says, is set in the `md` file. Change the mode and settings later in
 | Run code or tests (outside of CI)                 | ❌                      | ✅          | ❌             |                                    |
 | Merge PRs with failing CI                         | ❌                      | ✅          | ✅             |                                    |
 | Merge or commit protected files                   | ❌                      | ✅          | ✅             |                                    |
-| Commit to fork PRs or the default branch          | ❌                      | ✅          |                |                                    |
+| Commit to fork PRs or the default branch          | ❌                      | ✅          |     ❌           |                                    |
 | Act on requests from non-maintainers              | ❌                      | 🟡          | ✅             |                                    |
 | Approve PRs                                       | ❌                      | ❌          | ✅             |                                    |
 | Add or upgrade dependencies in its fixes          | ❌                      | 🟡          | ✅             |                                    |
