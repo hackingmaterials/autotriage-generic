@@ -1,6 +1,6 @@
 # autotriage-generic
 
-Generate an AI auto-triage configuration for GitHub.
+Generate an AI auto-triage configuration for GitHub. 😊
 
 
 It has three presets which may make it easier to use, these are:
