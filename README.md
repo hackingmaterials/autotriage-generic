@@ -8,9 +8,12 @@ It has three presets which may make it easier to use, these are:
 - normal (bot reviews everything, automerges small things)
 - mayhem (bot merges its own code)
 
-Each mode adds to the one before: ${\color{green}\text{conservative}} \rightarrow {\color{yellow}\text{normal}} \rightarrow {\color{red}\text{mayhem}}$
+Each mode gains capability over the one before it: ${\color{green}\text
+{conservative}} 
+\rightarrow {\color{yellow}\text{normal}} \rightarrow {\color{red}\text{mayhem}}$
 
-All are adjustable and tunable thru script or agent setup.
+> [!TIP] 
+> **All modes are fully adjustable and tunable thru script or agent setup.**
 
 
 
