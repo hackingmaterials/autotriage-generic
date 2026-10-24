@@ -15,11 +15,13 @@ REPO is the part of `OWNER/REPO` after the slash.
      and the `cron` line in `output/REPO/.github/workflows/autotriage.yml`.
   2. Show the table from step 1, and say which mode and settings the files
      use.
-  3. Ask the fine-tune question from step 1. If no, go on to step 5.
+  3. Ask the fine-tune question from step 1. If no, go on to item 6.
   4. Ask the auto-adjust question from step 1.
   5. Ask the style question from the end of step 1.
-  6. Make any changes the person asks for by editing those files (step 4).
-  7. Go on to step 3.
+  6. Ask the custom guidance question from the end of step 1. Always ask
+     it, even if the person said no to fine-tuning.
+  7. Make any changes the person asks for by editing those files (step 4).
+  8. Go on to step 3.
 - **If it doesn't exist,** start at step 1.
 
 Ground rules:
@@ -87,7 +89,9 @@ as the default:
   - In step 2, leave out `--cron`, `--max-prs`, and `--mentions`, so
     `setup.sh` uses its defaults. Don't write answers into
     `autotriage.conf`.
-  - Skip the style question and step 3, and go on to step 5.
+  - Skip the style question. Still ask the custom guidance question at
+    the end of this step.
+  - In step 3, do only "Write the custom guidance", then go on to step 5.
 
 Then ask these questions **one at a time**, in order. Each is yes or no;
 offer the chosen mode's answer as the default. Skip 0a if 0 is no, and 5a
@@ -167,12 +171,12 @@ Offer a default and accept "keep the default":
 Pass each handle they confirm as `--maintainer` in step 2, the escalation
 contact first.
 
-### The final question: comment style and code style
+### The style question: comment style and code style
 
-Unless the person skipped the questions, always end with this one, even
+Unless the person skipped the questions, always ask this one, even
 when the files already exist or the person seems in a hurry:
 
-> Last question: you can change two kinds of style, separately.
+> Next question: you can change two kinds of style, separately.
 >
 > 1. **Comment style:** how the bot writes its reviews and replies on PRs
 >    and issues.
@@ -212,6 +216,28 @@ the code style table, and ask only about comment style.
 | Anything maintainers dislike in bot code | Nothing listed |
 
 Step 3 says where the answers go.
+
+### The final question: custom guidance
+
+Always end with this one, as an open question, not multiple choice. Ask
+it in every case: when the person skipped the other questions, answered no
+to auto-adjust, the files already exist, or the person seems in a hurry.
+It is the person's chance to add what no other question covers.
+
+> Last question: is there anything specific to this repo you want the bots
+> to do or watch for? For example:
+>
+> - Extra scrutiny for some kind of PR, and what to check, e.g. "check
+>   benchmark submissions for data leakage".
+> - Files or areas that always need a human.
+> - Rules contributors must follow.
+> - Who to tag for certain areas.
+> - Anything the bots must never do.
+>
+> Describe it in your own words, or say "nothing".
+
+If they give guidance, ask follow-up questions only where you can't write
+it as clear rules otherwise. Step 3 says where the answers go.
 
 Stop instead if the repo is archived, a fork, or a template, or its or its
 organization's AI policy forbids AI bots.
@@ -264,8 +290,9 @@ fix" is on; if 5 is no and the mode isn't mayhem, add that line back.
 
 ## 3. Fill in the repo-specific sections
 
-If the person skipped the questions, skip this step and go on to step 5.
-If they answered no to auto-adjust, skip to "Write the style answers".
+If the person skipped the questions, do only "Write the custom guidance",
+then go on to step 5. If they answered no to auto-adjust, skip to "Write
+the style answers".
 
 Gather facts. A 403 or 404 means no access or no such setting, so note which.
 
@@ -333,6 +360,39 @@ Write the answers to the style question from step 1:
 
 Where they kept every default, leave "None listed yet."
 
+### Write the custom guidance
+
+Write the answer to the custom guidance question from step 1. If they
+said "nothing", skip this.
+
+Turn their words into concrete rules the bots can follow. Expand short
+guidance with what an expert in the repo's field would check. For example,
+"check submissions for leakage" becomes a checklist of the ways data can
+leak in that kind of work. You may read the parts of the target repo the
+guidance is about (e.g. its submission docs and CI), read-only, to make the
+rules accurate, even if the person answered no to auto-adjust. Don't change
+anything else from that reading.
+
+Put each rule where it fits:
+
+| The guidance is about | Where it goes |
+|---|---|
+| A kind of PR that needs its own review, e.g. submissions or plug-ins | A new `## <Kind of PR>` section in `autotriage_rules.md`, before "When a maintainer tags you": how to recognize it, what to check, and what to put in the comment. If it must always reach a human, also list its paths under "Domain risk areas" and add a `protected` pattern in `autotriage.conf`. |
+| Paths that always need a human | "Domain risk areas" in `autotriage_rules.md`, and a `protected` pattern in `autotriage.conf` |
+| Rules for contributors | "Contribution requirements" in `autotriage_rules.md` |
+| Who handles which area | "Area owners" in `autotriage_rules.md`. Only handles the person gives, with write access. |
+| How the bot writes comments | "Style for this repo" in `autotriage_rules.md` |
+| How the bot writes code | "Code style for this repo" in `autofix_rules.md` |
+| What the bots must never do | "General conduct" in `autotriage_rules.md`, and the "Never" list in `autofix_rules.md` |
+
+Write only checks the bots can do. The triage bot reads the diff, files,
+PRs, issues, and `git log`, but can't run code, open binary or compressed
+files, or fetch web pages. Where guidance needs more, say so in the rule,
+e.g. "judge the results from the source that produced them".
+
+When unsure about a rule, choose the more restrictive version and list it
+under "Questions for you" in the report.
+
 ## 4. Refine, if the person asks
 
 Each refinement is a line in `.github/autotriage.conf`, except the
@@ -381,8 +441,8 @@ Report to the person:
 2. The mode and settings, why, and any warning you gave. Repeat that they
    can adjust any of it later in `.github/autotriage.conf`, and the schedule
    in `.github/workflows/autotriage.yml`.
-3. What you filled in, with one line of evidence each, and the style they
-   chose.
+3. What you filled in, with one line of evidence each, the style they
+   chose, and one line for each piece of custom guidance and where it went.
 4. The setup checklist `setup.sh` printed, and its "Anthropic API key"
    note. If the key isn't set, give them the link it printed. Don't offer
    to set the key yourself; they paste it in their own terminal.
