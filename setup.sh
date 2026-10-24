@@ -179,6 +179,9 @@ set_line "$conf" "max_prs_per_run = " "max_prs_per_run = $max_prs"
 set_line "$conf" "mentions = " "mentions = $mentions"
 set_line "$conf" "allow_no_ci = " "allow_no_ci = $allow_no_ci"
 if [[ "$mode" != conservative && "$autofix" == off ]]; then set_line "$conf" "# autofix = off" "autofix = off"; fi
+# In mayhem, or when the bot may open PRs, it may edit pyproject.toml.
+# (Conservative already turned autofix off above.)
+if [[ "$mode" == mayhem || "$autofix" == on ]]; then drop_line "$conf" "protected = pyproject.toml"; fi
 
 wf=workflows/autotriage.yml
 if [[ -z "$cron_expr" ]]; then

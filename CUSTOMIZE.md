@@ -256,6 +256,10 @@ wrote it.
 | 5 | `autofix_issues = on` or `off` |
 | 5a | `merge_own_fixes = yes` or `no` |
 
+`pyproject.toml` is protected unless the mode is mayhem or the answer to 5
+is yes. `setup.sh` removes `protected = pyproject.toml` whenever "@claude
+fix" is on; if 5 is no and the mode isn't mayhem, add that line back.
+
 `setup.sh` prints the setup checklist; put it in your report.
 
 ## 3. Fill in the repo-specific sections
@@ -344,6 +348,7 @@ mode, which never merges or commits.
 | No "@claude fix" on PRs, or on issues | `autofix_prs = off`, `autofix_issues = off`. With both off, delete the autofix files. |
 | The bot to merge its own issue-fix PRs, or not | `merge_own_fixes = yes` or `no` |
 | The bot kept away from more files | More `protected` patterns |
+| The bot kept away from `pyproject.toml`, or allowed to edit it | Add or delete `protected = pyproject.toml`. Setup leaves it out in mayhem or when "@claude fix" opens PRs. |
 | Bot changes kept to some directories | `autofix_paths` patterns |
 | Some branches never merged by the bot | `block_branch` patterns |
 | Different size limits | `max_changed_lines`, `autofix_max_files`, `autofix_max_changed_lines` |
