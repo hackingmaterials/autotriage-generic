@@ -147,5 +147,5 @@ jobs:
                List any PRs left unprocessed because of the limit.
           claude_args: >-
             --max-turns 150
-            --allowedTools "Read,Grep,Glob,Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr checks:*),Bash(gh pr edit:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(.github/autotriage_comment.sh:*),Bash(git log:*),Bash(git blame:*),Bash(.github/autotriage_guard.sh:*)"
+            --allowedTools "Read,Grep,Glob,Agent,Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr checks:*),Bash(gh pr edit:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(.github/autotriage_comment.sh:*),Bash(git log:*),Bash(git blame:*),Bash(.github/autotriage_guard.sh:*)"
             --disallowedTools "Edit,Write,MultiEdit,NotebookEdit"

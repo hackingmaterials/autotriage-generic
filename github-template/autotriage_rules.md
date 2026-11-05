@@ -271,6 +271,21 @@ of this evidence the PR has, and whatever it lacks, in your summary.
 - **Authority:** decisions about domain behavior belong to the area owner.
   Approval from a non-owner is not enough for anything under rule 1.
 
+## Checking findings
+
+A finding is a problem you report in the diff: a bug, a wrong result, a
+broken caller. Rule 1 and rule 4 items are not findings.
+
+- Each finding needs a concrete case: this input or situation gives this
+  wrong result, with the lines it comes from. No case, no finding.
+- Before you post, give all your findings to one fresh subagent (the Agent
+  tool), with the PR title, description, and diff. Ask it to confirm or
+  refute each one from the code, not to look for new ones. Drop every
+  finding it does not confirm.
+- For a PR with more than 500 changed lines, split its changed files into
+  groups of about 500 lines. Give each group to its own subagent, which
+  reports at most 3 findings. Then check them as above.
+
 ## Writing comments
 
 Write in ASD-STE100 Simplified Technical English. Use the shortest form that
