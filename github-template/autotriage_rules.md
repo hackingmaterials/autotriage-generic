@@ -311,9 +311,11 @@ Bottom line.
 - If a fix came from someone's issue comment, suggest crediting them.
 - No "Optional" or "Suggestion" lists. Raise smaller points only when a
   maintainer asks for them (e.g. "what else would you change?").
-- Don't point out problems the PR doesn't touch, style or anything a linter or
-  formatter catches, or general requests for more tests or docs beyond rule 4
-  and "Contribution requirements".
+- Don't point out problems that were there before the PR, style or anything
+  a linter or formatter catches, or general requests for more tests or docs.
+  A problem the PR causes in code it doesn't change, e.g. a broken caller,
+  still counts. Rule 1, rule 4, and "Contribution requirements" still apply
+  in full.
 - If the AI policy above requires wording, add it as one last line.
 - Write formulas as LaTeX (`$...$`), not Unicode symbols.
 
