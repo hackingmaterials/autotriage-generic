@@ -29,6 +29,7 @@ load_conf() {
   # The triage workflow.
   max_prs_per_run=5
   mentions=on
+  max_comment_words=120
   # Merging (autotriage_guard.sh).
   merge_kinds=()
   allow_no_ci=no
@@ -60,6 +61,7 @@ load_conf() {
       mode) mode="$value" ;;
       max_prs_per_run) max_prs_per_run="$value" ;;
       mentions) mentions="$value" ;;
+      max_comment_words) max_comment_words="$value" ;;
       merge) merge_kinds+=("$value") ;;
       allow_no_ci) allow_no_ci="$value" ;;
       base_branch) base_branch="$value" ;;

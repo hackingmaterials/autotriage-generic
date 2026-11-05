@@ -147,7 +147,7 @@ if [[ ${#maintainers[@]} -eq 0 ]]; then
 fi
 
 # Choose the files for the mode.
-files=(autotriage_rules.md autotriage.conf autotriage_lib.sh workflows/autotriage.yml)
+files=(autotriage_rules.md autotriage.conf autotriage_lib.sh autotriage_comment.sh workflows/autotriage.yml)
 if [[ "$mode" != conservative ]]; then
   files+=(autotriage_guard.sh)
   if [[ "$autofix" == on ]]; then
@@ -168,7 +168,7 @@ fi
 mkdir -p "$out/workflows"
 cd "$out"
 for f in "${files[@]}"; do cp "$src/$f" "$f"; done
-for f in autotriage_guard.sh autofix_publish.sh; do
+for f in autotriage_comment.sh autotriage_guard.sh autofix_publish.sh; do
   if [[ -f "$f" ]]; then chmod +x "$f"; fi
 done
 
@@ -213,7 +213,7 @@ set_text "$rules" "{{OTHER_MAINTAINERS}}" "$others"
 
 # Check the result.
 ! grep -n '{{' "$rules" || die "placeholders left in $rules"
-for f in autotriage_lib.sh autotriage_guard.sh autofix_publish.sh; do
+for f in autotriage_lib.sh autotriage_comment.sh autotriage_guard.sh autofix_publish.sh; do
   if [[ -f "$f" ]]; then bash -n "$f" || die "syntax error in $f"; fi
 done
 expected="$mode"

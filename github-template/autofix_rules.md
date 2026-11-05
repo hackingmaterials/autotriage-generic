@@ -55,7 +55,9 @@ Code style for this repo. This overrides the lines above, but never the
 
 Always write `.autofix_summary.md` in the repo root, then run the publish
 script, even if you changed nothing. The summary becomes the PR description
-or the comment. Use the format in "Writing comments":
+or the comment. Use the format in "Writing comments", and keep the text
+outside its collapsed section within `max_comment_words` in
+`autotriage.conf`:
 
 - **Bottom line:** what you changed, or why you changed nothing.
 - **Bullets, if necessary:** root cause, changed files, added test.
