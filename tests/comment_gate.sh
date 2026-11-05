@@ -39,6 +39,11 @@ $(words 500)
 check "" "$(words 100)
 <details>
 $(words 200)" refused
+# <details open> shows expanded, so it hides nothing. (authored by claude, not human ardunn)
+check "" "$(words 100)
+<details open><summary>Details</summary>
+$(words 200)
+</details>" refused
 check "max_comment_words = 200" "$(words 150)" posted
 
 exit $failed

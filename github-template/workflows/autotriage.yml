@@ -71,6 +71,7 @@ jobs:
           load_conf .github/autotriage.conf
           [[ "$max_prs_per_run" =~ ^[1-9][0-9]*$ ]] || fail "bad max_prs_per_run '$max_prs_per_run'"
           [[ "$mentions" =~ ^(on|off)$ ]] || fail "bad mentions '$mentions'"
+          [[ "$max_comment_words" =~ ^[1-9][0-9]*$ ]] || fail "bad max_comment_words '$max_comment_words'"
           echo "max_prs=$max_prs_per_run" >>"$GITHUB_OUTPUT"
           run=true
           trigger="${{ github.event_name }}"
