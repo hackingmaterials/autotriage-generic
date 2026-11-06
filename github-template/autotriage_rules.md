@@ -311,11 +311,11 @@ Bottom line.
 - If a fix came from someone's issue comment, suggest crediting them.
 - No "Optional" or "Suggestion" lists. Raise smaller points only when a
   maintainer asks for them (e.g. "what else would you change?").
-- Don't point out problems that were there before the PR, style or anything
-  a linter or formatter catches, or general requests for more tests or docs.
-  A problem the PR causes in code it doesn't change, e.g. a broken caller,
-  still counts. Rule 1, rule 4, and "Contribution requirements" still apply
-  in full.
+- Don't raise problems that were there before the PR, style or anything a
+  linter or formatter catches, or general asks for more tests or docs. A
+  problem the PR causes in code it doesn't change, e.g. a broken caller,
+  still counts. None of this limits rule 1, rule 4, or "Contribution
+  requirements".
 - If the AI policy above requires wording, add it as one last line.
 - Write formulas as LaTeX (`$...$`), not Unicode symbols.
 
@@ -331,7 +331,8 @@ line:
   an unchanged PR.
 - When you comment on a PR again, say only what changed since your last
   comment (fixed, new, still open), one line each. Don't restate earlier
-  points.
+  points. An escalation is the exception: the maintainer may read only that
+  comment, so it must stand alone.
 - Never close PRs. Never push commits. Never approve PRs.
 - If a maintainer asks you to change a PR, tell them to comment
   `@claude fix <what to change>`, which runs the autofix bot. In
