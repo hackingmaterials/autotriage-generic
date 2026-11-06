@@ -49,8 +49,11 @@ Run
   later. Values are `conservative`, `normal`, and `mayhem`.
 - `--maintainer`: Maintainers the bot tags when it escalates. The first is the
   default; repeat the option to list more.
+- `--preferences FILE`: Reuse the options saved in a `MY_PREFERENCES.md` (see
+  [Updating later](#updating-later)). Options you also give win.
 
-The files go to `output/REPO/.github/`.
+The files go to `output/REPO/.github/`, with a `MY_PREFERENCES.md` that saves
+your choices.
 
 ##### Step B2: Customize further
 
@@ -59,19 +62,45 @@ Either:
 - have your agent guide you through `CUSTOMIZE.md`, using the prompt `setup.sh`
   prints at the end
 - edit `output/REPO/.github/autotriage_rules.md` (and `autotriage.conf` for
-  settings) yourself
+  settings) yourself. List your edits under "Customizations" in
+  `MY_PREFERENCES.md`, so an update can make them again.
 
 </details>
 
 ## Step 2: Put in your repo
 
 Copy the contents of `output/REPO/.github/` into your repo's `.github/` and
-merge to `main`. Nothing runs until it's there.
+merge to `main`. Nothing runs until it's there. Keep `MY_PREFERENCES.md` with
+the rest: updates read it.
 
 If the API key isn't set yet: `gh secret set ANTHROPIC_API_KEY -R OWNER/REPO`
 
 Run `/install-github-app` in Claude Code, from your repo, so the bot posts as
 `claude[bot]`. Skip its own workflows.
+
+## Updating later
+
+`MY_PREFERENCES.md` saves every choice from setup: the `setup.sh` options, and
+under "Customizations", your answers and each change made to the files. After
+pulling a newer autotriage-generic, reuse it instead of answering again:
+
+```markdown
+Read CUSTOMIZE.md and update the autotriage files for
+hackingmaterials/my_repo from its MY_PREFERENCES.md
+```
+
+Or by hand, which reuses the options but not the customizations:
+
+```sh
+./setup.sh --preferences path/to/my_repo/.github/MY_PREFERENCES.md
+```
+
+> [!WARNING]
+> Copying new files into your repo's `.github/` replaces files with the same
+> names, but never removes old ones. If `setup.sh` lists files to delete, delete
+> them first, or old and new autotriage files mix. Don't delete the whole
+> `.github/`: it has your other files. In `output/`, `setup.sh` handles this
+> itself: a rerun moves the old files to `output/REPO/.github.previous/`.
 
 ## How does it work, and what can it do?
 

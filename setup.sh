@@ -5,11 +5,20 @@
 #   ./setup.sh --repo OWNER/REPO --mode normal --maintainer @someone
 #   cp -R output/REPO/.github/. path/to/REPO/.github/
 #
+# It saves the options in MY_PREFERENCES.md, with the other files. After
+# autotriage-generic changes, make new files with the same options:
+#
+#   ./setup.sh --preferences path/to/REPO/.github/MY_PREFERENCES.md
+#
+# A rerun moves the last run's output/REPO/.github/ to .github.previous/.
+#
 # Required:
 #   --repo OWNER/REPO       the repository to make files for, as in its URL,
 #                           e.g. hackingmaterials/matminer
 #
 # Options (defaults in brackets):
+#   --preferences FILE      start from the options saved in a
+#                           MY_PREFERENCES.md; options given here win
 #   --mode MODE             conservative, normal, or mayhem [conservative]
 #   --maintainer @HANDLE    who the bot escalates to; repeat to list other
 #                           maintainers [you, from gh]
@@ -45,6 +54,51 @@ usage() {
 }
 need() { [[ $# -ge 2 ]] || die "$1 needs a value"; }
 
+# [authored by claude, not human ardunn] Read a MY_PREFERENCES.md: the
+# "option = value" lines in the block under "## Setup options", where an
+# unknown option is an error. Also keep its "## Files" list and its
+# "## Customizations" section, for the new MY_PREFERENCES.md.
+read_prefs() {
+  local file="$1" block line key value
+  [[ -f "$file" ]] || die "no preferences file '$file'"
+  block=$(awk '/^## Setup options/ { s = 1; next }
+    s == 1 && /^```/ { s = 2; next }
+    s == 2 && /^```/ { exit }
+    s == 2' "$file")
+  [[ -n "$block" ]] || die "$file has no options block under '## Setup options'"
+  while IFS= read -r line; do
+    if [[ "$line" =~ ^[[:space:]]*(#.*)?$ ]]; then continue; fi
+    [[ "$line" == *=* ]] || die "$file: '$line' is not 'option = value'"
+    key="${line%%=*}"
+    key="${key//[[:space:]]/}"
+    value="${line#*=}"
+    value="${value#"${value%%[![:space:]]*}"}"
+    value="${value%"${value##*[![:space:]]}"}"
+    case "$key" in
+      repo) repo="$value" ;;
+      mode) mode="$value" ;;
+      maintainer) maintainers+=("$value") ;;
+      cron) cron="$value" ;;
+      max-prs) max_prs="$value" ;;
+      mentions) mentions="$value" ;;
+      autofix)
+        [[ "$value" =~ ^(on|off)$ ]] || die "$file: autofix must be on or off"
+        autofix="$value" ;;
+      pip-tools)
+        [[ "$value" =~ ^(yes|no)$ ]] || die "$file: pip-tools must be yes or no"
+        pip_tools=false
+        [[ "$value" == no ]] || pip_tools=true ;;
+      allow-no-ci)
+        [[ "$value" =~ ^(yes|no)$ ]] || die "$file: allow-no-ci must be yes or no"
+        allow_no_ci="$value" ;;
+      *) die "unknown option '$key' in $file" ;;
+    esac
+  done <<<"$block"
+  prefs_files=$(awk '/^## Files/ { s = 1; next } s && /^## / { exit }
+    s && /^- `/ { sub(/^- `/, ""); sub(/`.*$/, ""); print }' "$file")
+  prefs_custom=$(awk '/^## Customizations/ { s = 1 } s' "$file")
+}
+
 # Replace the one line of file $1 that starts with $2 by $3, which may span
 # lines. Values pass through the environment, so nothing needs escaping.
 set_line() {
@@ -75,7 +129,8 @@ set_text() {
   mv "$1.tmp" "$1"
 }
 
-# Read the options.
+# Read the options. A --preferences file is read first, so options given
+# here win over it.
 mode=conservative
 cron=weekdays
 max_prs=5
@@ -85,10 +140,30 @@ pip_tools=false
 allow_no_ci=no
 repo=""
 maintainers=()
+prefs="" prefs_files="" prefs_custom=""
+for ((i = 1; i <= $#; i++)); do
+  if [[ "${!i}" == --preferences ]]; then
+    j=$((i + 1))
+    [[ $j -le $# ]] || die "--preferences needs a value"
+    prefs="${!j}"
+  fi
+done
+if [[ -n "$prefs" ]]; then read_prefs "$prefs"; fi
+cli_maintainers=false
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --preferences) need "$@"; shift 2 ;;
     --mode) need "$@"; mode="$2"; shift 2 ;;
-    --maintainer) need "$@"; maintainers+=("$2"); shift 2 ;;
+    --maintainer)
+      need "$@"
+      # [authored by claude, not human ardunn] Handles given here replace
+      # the saved list instead of adding to it.
+      if ! $cli_maintainers; then
+        maintainers=()
+        cli_maintainers=true
+      fi
+      maintainers+=("$2")
+      shift 2 ;;
     --cron) need "$@"; cron="$2"; shift 2 ;;
     --max-prs) need "$@"; max_prs="$2"; shift 2 ;;
     --mentions) need "$@"; mentions="$2"; shift 2 ;;
@@ -117,6 +192,7 @@ case "$cron" in
     cron_expr="$cron"
     ;;
 esac
+autofix_asked="$autofix"
 [[ "$mode" != conservative ]] || autofix=off
 i=0
 while [[ $i -lt ${#maintainers[@]} ]]; do
@@ -155,6 +231,31 @@ if [[ "$mode" != conservative ]]; then
   fi
 fi
 if [[ "$pip_tools" == true ]]; then files+=(workflows/upgrade-dependencies.yml); fi
+files+=(MY_PREFERENCES.md)
+
+# [authored by claude, not human ardunn] Files the last setup made (from
+# --preferences) that this one doesn't. Copying the new files into the repo
+# leaves them there, so the report says to delete them. Only plain paths
+# under .github/ are listed, since the person runs the delete.
+stale=()
+while IFS= read -r f; do
+  if [[ -z "$f" || "$f" == *..* || ! "$f" =~ ^[A-Za-z0-9_.-]+(/[A-Za-z0-9_.-]+)?$ ]]; then continue; fi
+  keep=false
+  for g in "${files[@]}"; do
+    if [[ "$f" == "$g" ]]; then keep=true; fi
+  done
+  if ! $keep; then stale+=("$f"); fi
+done <<<"$prefs_files"
+
+# Which autotriage-generic made the files, so an update can see what changed.
+version=$(git -C "$here" rev-parse --short HEAD 2>/dev/null || true)
+if [[ -z "$version" ]]; then
+  version="unknown (not a git checkout)"
+elif [[ -n "$(git -C "$here" status --porcelain -- github-template setup.sh 2>/dev/null)" ]]; then
+  version="\`$version\`, with local changes"
+else
+  version="\`$version\`"
+fi
 
 # Copy into a fresh output folder. It becomes the repository's .github/, so
 # paths below are relative to that.
@@ -211,8 +312,35 @@ set_text "$rules" "{{REPO}}" "$repo_line"
 set_text "$rules" "{{MAINTAINER}}" "${maintainers[0]}"
 set_text "$rules" "{{OTHER_MAINTAINERS}}" "$others"
 
+# [authored by claude, not human ardunn] Save what this run used, in the
+# format read_prefs reads, so --preferences can make the same files again.
+saved=MY_PREFERENCES.md
+options="repo = $repo"$'\n'"mode = $mode"
+for m in "${maintainers[@]}"; do options="$options"$'\n'"maintainer = $m"; done
+pip_tools_yn=no
+if [[ "$pip_tools" == true ]]; then pip_tools_yn=yes; fi
+options="$options"$'\n'"cron = $cron"$'\n'"max-prs = $max_prs"$'\n'"mentions = $mentions"
+options="$options"$'\n'"autofix = $autofix_asked"$'\n'"pip-tools = $pip_tools_yn"$'\n'"allow-no-ci = $allow_no_ci"
+file_list=""
+for f in "${files[@]}"; do file_list="$file_list${file_list:+$'\n'}- \`$f\`"; done
+set_text "$saved" "{{REPO}}" "$repo"
+set_text "$saved" "{{VERSION}}" "$version"
+set_text "$saved" "{{OPTIONS}}" "$options"
+set_text "$saved" "{{FILES}}" "$file_list"
+
 # Check the result.
-! grep -n '{{' "$rules" || die "placeholders left in $rules"
+! grep -n '{{' "$rules" "$saved" || die "placeholders left in $rules or $saved"
+
+# Carry the customizations over. setup.sh can't make them; an agent can.
+has_custom=false
+if [[ -n "$prefs_custom" ]]; then
+  awk '/^## Customizations/ { exit } { print }' "$saved" >"$saved.tmp"
+  printf '%s\n' "$prefs_custom" >>"$saved.tmp"
+  mv "$saved.tmp" "$saved"
+  # Its own placeholder, not the rules' "None listed yet.", which records
+  # quote when they describe a change.
+  if ! grep -qx 'Nothing recorded yet.' <<<"$prefs_custom"; then has_custom=true; fi
+fi
 for f in autotriage_lib.sh autotriage_comment.sh autotriage_guard.sh autofix_publish.sh; do
   if [[ -f "$f" ]]; then bash -n "$f" || die "syntax error in $f"; fi
 done
@@ -310,6 +438,10 @@ echo "  in .github/workflows/autotriage.yml. Conservative mode always wins: it"
 echo "  stops every merge and commit."
 
 section "To install"
+if [[ ${#stale[@]} -gt 0 ]]; then
+  step "In your $repo checkout, delete what the last setup made and this one doesn't. Copying doesn't remove old files, and a leftover workflow still runs:" \
+    "(cd path/to/${repo#*/}/.github && rm -f ${stale[*]})"
+fi
 step "Copy the folder's contents into .github/ in your $repo checkout (files with the same names are replaced):" \
   "cp -R $rel/. path/to/${repo#*/}/.github/"
 step "Merge it into your default branch (usually main), through a PR or directly. ${bold}Nothing runs until it is there:${reset} GitHub only runs scheduled and comment-triggered workflows from the default branch."
@@ -332,7 +464,13 @@ if [[ -n "$previous" ]]; then
   note "The files from your last run, with any edits, are in $previous/. Copy back anything you want to keep."
 fi
 note "If $repo already has other workflows that run Claude, make sure they don't answer the same \"@claude\" comments."
-note "If you rerun setup.sh with a different mode, delete autotriage files the new mode no longer lists from the repo."
+if [[ -z "$prefs_files" ]]; then
+  note "If $repo already has autotriage files from an earlier setup, delete the ones not listed under \"Files\" before you copy. Copying doesn't remove them."
+fi
+note "MY_PREFERENCES.md saves these choices. Copy it with the rest; next time, run setup.sh --preferences on it."
+if $has_custom; then
+  note "MY_PREFERENCES.md lists customizations from $prefs that setup.sh doesn't make. Have your agent make them again (below) before you copy the files."
+fi
 if [[ -n "$lint_note" ]]; then note "$lint_note"; fi
 
 # The API key: check the repo has it, and offer to set it.
@@ -371,8 +509,13 @@ fi
 bar=$(repeat 72 ━)
 printf '\n%s%s%s\n\n' "$bold$magenta" "$bar" "$reset"
 printf '  %s▶ NOW RUN THIS IN YOUR AGENT:%s\n\n' "$bold$yellow" "$reset"
-printf '    %sRead CUSTOMIZE.md and walk me through customizing the autotriage files in %s for %s. I already ran setup.sh.%s\n' \
-  "$bold$green" "$rel" "$repo" "$reset"
+if $has_custom; then
+  printf '    %sRead CUSTOMIZE.md and update the autotriage files in %s for %s from its MY_PREFERENCES.md. I already ran setup.sh.%s\n' \
+    "$bold$green" "$rel" "$repo" "$reset"
+else
+  printf '    %sRead CUSTOMIZE.md and walk me through customizing the autotriage files in %s for %s. I already ran setup.sh.%s\n' \
+    "$bold$green" "$rel" "$repo" "$reset"
+fi
 printf '\n%s%s%s\n' "$bold$magenta" "$bar" "$reset"
 
 # When an agent (or anything non-interactive) runs this, say plainly which
