@@ -104,6 +104,9 @@ If the PR also matches rule 3 or 4, include that in the same comment.
 **In every mode,** escalate when the PR:
 
 - Touches a domain risk area above
+- Changes expected values in tests: new reference outputs, flipped signs, or
+  loosened tolerances. A test "updated to pass" is a change to results. No
+  bot runs the code, so a person must check the new numbers.
 - Touches a file matching a `protected` pattern in `.github/autotriage.conf`,
   such as CI, packaging, release, licensing, or large or binary data. This
   includes bot PRs, e.g. GitHub Actions version bumps.
@@ -131,8 +134,6 @@ If the PR also matches rule 3 or 4, include that in the same comment.
     - formulas, constants, units, or signs
     - default parameters, tolerances, or convergence settings
     - random seeds or algorithm choice
-- Changes expected values in tests: new reference outputs, flipped signs, or
-  loosened tolerances. A test "updated to pass" is a change to results.
 - Adds, removes, or regenerates data files or datasets, or changes their
   metadata (URLs, hashes, versions)
 - Changes benchmark or evaluation data, metrics, or train/test splits. These

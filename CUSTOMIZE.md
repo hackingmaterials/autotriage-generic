@@ -50,7 +50,7 @@ before anything else. Do this even if they already named a mode.
 > | "@claude fix" on an issue opens a PR | no | yes, a draft | yes, ready |
 > | "@claude fix" on a PR commits to it | no | yes | yes |
 > | Merge its own fixes | no | no | yes |
-> | Always escalate security and cost risks, protected files, domain risk areas | yes | yes | yes |
+> | Always escalate security and cost risks, protected files, domain risk areas, changed expected test values | yes | yes | yes |
 >
 > **You can adjust any of this later.** Switch modes by editing the `mode`
 > line in `.github/autotriage.conf`. Change single behaviors with the other

@@ -301,7 +301,7 @@ cat <<'EOF'
   | "@claude fix" on a PR commits to it                   | no           | yes          | yes        |
   | Merge its own fixes                                   | no           | no           | yes        |
   | Always escalate security, cost, protected files,      | yes          | yes          | yes        |
-  | domain risk areas                                     |              |              |            |
+  | domain risk areas, changed expected test values       |              |              |            |
 EOF
 printf '\n  These files use %s%s%s mode.\n\n' "$bold" "$mode" "$reset"
 printf '  %sYou can adjust any of this later:%s the mode and other settings are\n' "$bold" "$reset"
