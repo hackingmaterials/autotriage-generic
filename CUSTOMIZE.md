@@ -411,7 +411,7 @@ mode, which never merges or commits.
 | The bot kept away from `pyproject.toml`, or allowed to edit it | Add or delete `protected = pyproject.toml`. Setup leaves it out in mayhem or when "@claude fix" opens PRs. |
 | Bot changes kept to some directories | `autofix_paths` patterns |
 | Some branches never merged by the bot | `block_branch` patterns |
-| Different size limits | `max_changed_lines`, `autofix_max_files`, `autofix_max_changed_lines` |
+| Different size limits | `max_changed_lines`, `autofix_max_files`, `autofix_max_changed_lines`, `max_comment_words` |
 
 Before the files are copied into the repo, they are under
 `output/REPO/.github/`; edit them there.

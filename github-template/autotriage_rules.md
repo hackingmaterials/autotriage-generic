@@ -275,7 +275,10 @@ of this evidence the PR has, and whatever it lacks, in your summary.
 
 Write in ASD-STE100 Simplified Technical English. Use the shortest form that
 works, for every comment (escalations, clarification requests, CI approval
-requests, reviews, replies):
+requests, replies). Post each one with
+`.github/autotriage_comment.sh <number> "<body>"`. It refuses a comment with
+more than `max_comment_words` (in `.github/autotriage.conf`) outside its
+`<details>` section.
 
 1. **Bottom line.** Always. One sentence, at most 20 words. If 5 words are
    enough, use 5.
