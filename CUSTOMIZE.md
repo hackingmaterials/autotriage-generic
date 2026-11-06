@@ -7,8 +7,29 @@ defaults, to `output/REPO/.github/`. You do the part that needs judgment:
 filling in what's specific to this repo, in those output files. The person
 copies the folder into their repo afterwards.
 
-**First, check for existing output.** Look for `output/REPO/.github/`, where
-REPO is the part of `OWNER/REPO` after the slash.
+REPO below is the part of `OWNER/REPO` after the slash.
+
+**First, look for saved preferences.** Every setup saves the choices made
+in a `MY_PREFERENCES.md`, so a later update doesn't ask them again. Always
+check the repo's own copy, even if `output/` has one: the repo's copy is
+the one in use, and `output/` may hold an older run's. A 404 means the repo
+has none:
+
+`gh api -H "Accept: application/vnd.github.raw" repos/OWNER/REPO/contents/.github/MY_PREFERENCES.md`
+
+Then:
+- **If the person asked to update,** follow "Update from saved
+  preferences" below. Use the file they name, else the repo's copy, else
+  `output/REPO/.github/MY_PREFERENCES.md`. But if they say they already
+  ran `setup.sh`, use the one in `output/REPO/.github/`: it is the newer
+  one.
+- **If the repo has a copy, but they didn't ask to update,** ask whether
+  to reuse it. If yes, follow "Update from saved preferences".
+- **Otherwise,** check for existing output. Don't ask any question that
+  "Customizations" in `output/REPO/.github/MY_PREFERENCES.md` already
+  answers.
+
+**Then, check for existing output.** Look for `output/REPO/.github/`.
 - **If it exists,** those are the files to customize. Don't run `setup.sh`
   again unless step 2 says to.
   1. Read the mode and settings in `output/REPO/.github/autotriage.conf`,
@@ -20,7 +41,8 @@ REPO is the part of `OWNER/REPO` after the slash.
   5. Ask the style question from the end of step 1.
   6. Ask the custom guidance question from the end of step 1. Always ask
      it, even if the person said no to fine-tuning.
-  7. Make any changes the person asks for by editing those files (step 4).
+  7. Make any changes the person asks for by editing those files (step 4),
+     and record them (step 5).
   8. Go on to step 3.
 - **If it doesn't exist,** start at step 1.
 
@@ -36,6 +58,50 @@ Ground rules:
   history), and record it in the report. Never guess a maintainer handle.
 - When unsure, choose the more restrictive option and list it under
   "Questions for you" in the report.
+- Record every answer and every change you make to the generated files
+  under "Customizations" in `output/REPO/.github/MY_PREFERENCES.md` (step
+  5). An update makes them again from there.
+- Make new files only with `setup.sh`, and never delete `output/REPO/` or
+  its `.github/` yourself. A rerun moves the last run's `.github/` to
+  `.github.previous/` (replacing any older one) and writes a fresh one, so
+  old and new files never mix in `output/`. Deleting it instead loses that
+  copy and its `MY_PREFERENCES.md`.
+- Old and new files do mix in the repo: copying into its `.github/`
+  replaces files with the same names but never removes any. When
+  `setup.sh` lists files to delete from the repo, put that step in your
+  report. Never tell the person to delete the repo's whole `.github/`: it
+  holds their other workflows and files.
+
+## Update from saved preferences
+
+Use this to make new files for a repo that was set up before, e.g. after
+autotriage-generic changed, without asking the person again.
+
+1. **Make the files.** Skip this if the person already ran
+   `setup.sh --preferences`. Otherwise, if you chose the repo's copy, save
+   all of it:
+   `mkdir -p output/REPO && gh api -H "Accept: application/vnd.github.raw" repos/OWNER/REPO/contents/.github/MY_PREFERENCES.md > output/REPO/MY_PREFERENCES.md`
+   Then run `./setup.sh --preferences FILE` on the file you chose. Never
+   swap in another copy because it looks the same: every copy starts with
+   the same text, and they differ further down. Add an option only for
+   something the person wants to change: options given win over the file.
+   `setup.sh` reads the file before it moves anything, so
+   `output/REPO/.github/MY_PREFERENCES.md` itself works too. It reuses the
+   setup options and copies "Customizations" into the new
+   `MY_PREFERENCES.md`.
+2. **See what changed.** The old file names the commit that made it. If
+   this checkout has that commit, this shows what changed since:
+   `git diff COMMIT -- github-template/ setup.sh CUSTOMIZE.md`
+3. **Make the customizations again.** Make each change listed under
+   "Customizations" in the new files in `output/REPO/.github/`. If its
+   section moved, put it where it fits now. If it no longer applies, e.g.
+   the new files already do it, leave it out and say so in the report.
+4. **Ask only what's new.** Ask only the questions from step 1 that
+   "Customizations" doesn't answer, e.g. ones added since. Don't read the
+   repo for auto-adjust again unless the person asks.
+5. **Record, check, and report** (step 5). In the report, list what you
+   made again, what you left out and why, any new answers, and the files
+   `setup.sh` said to delete from the repo.
 
 ## 1. Pick the mode and settings
 
@@ -267,8 +333,11 @@ Add these as needed:
 Only run `setup.sh` when there is no output yet, or to switch between
 conservative and normal or mayhem. That switch changes which files exist;
 normal to mayhem and back is just the `mode` line.
-A rerun moves the old folder to `output/REPO/.github.previous/`. Copy any
-sections you or the person filled in back from there.
+To rerun it, pass `--preferences output/REPO/.github/MY_PREFERENCES.md`
+and only the options that change: it keeps the rest, and the
+"Customizations" record. Then make those customizations again, as in
+"Update from saved preferences", step 3. The rerun moves the old folder to
+`output/REPO/.github.previous/`, where you can check what you made before.
 
 Then write the answers to questions 1-5a into
 `output/REPO/.github/autotriage.conf`, so the file says exactly what was
@@ -431,6 +500,34 @@ Check:
 - The workflows in `output/REPO/.github/workflows/` pass `actionlint`, if it
   is installed.
 
+### Record the preferences
+
+Under "Customizations" in `output/REPO/.github/MY_PREFERENCES.md`, record
+what was chosen and done, so an update can do it again without asking.
+Leave "Setup options" and "Files" as `setup.sh` wrote them.
+
+- **If it says "Nothing recorded yet.",** replace that line with the
+  record.
+- **If it already has a record** (an update), edit it in place: add what's
+  new, and remove what you left out. Keep one copy of each item. Records
+  quote rule text such as "None listed yet.", so when you edit, match
+  whole bullets, not those words alone.
+
+The record has two parts:
+
+- **Answers:** one bullet per question the person answered in step 1: the
+  fine-tune question, 0-5a, auto-adjust, comment style, code style, and the
+  custom guidance, quoted in their own words. If they skipped the
+  questions, say so.
+- **Changes:** one bullet per change to a generated file: the file, the
+  section or `autotriage.conf` line, and the text, in a fenced block if it
+  is longer than a line. Include what you filled in with auto-adjust, with
+  its evidence.
+
+It is a record, not a report: only what was chosen and done.
+
+### Report
+
 Report to the person:
 1. This, word for word, first:
    > **Nothing runs until these files are on your repository's default
@@ -443,7 +540,8 @@ Report to the person:
    in `.github/workflows/autotriage.yml`.
 3. What you filled in, with one line of evidence each, the style they
    chose, and one line for each piece of custom guidance and where it went.
-4. The setup checklist `setup.sh` printed, and its "Anthropic API key"
-   note. If the key isn't set, give them the link it printed. Don't offer
-   to set the key yourself; they paste it in their own terminal.
+4. The setup checklist `setup.sh` printed, with any step to delete old
+   files from the repo, and its "Anthropic API key" note. If the key isn't
+   set, give them the link it printed. Don't offer to set the key
+   yourself; they paste it in their own terminal.
 5. Questions for you: anything you couldn't settle.
