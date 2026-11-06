@@ -39,7 +39,8 @@ $(words 500)
 check "" "$(words 100)
 <details>
 $(words 200)" refused
-# <details open> shows expanded, so it hides nothing. (authored by claude, not human ardunn)
+# <details open> shows expanded, so it hides nothing.
+# (authored by claude, not human ardunn)
 check "" "$(words 100)
 <details open><summary>Details</summary>
 $(words 200)

@@ -20,7 +20,8 @@ load_conf "$here/autotriage.conf"
 
 # Count the words outside <details> sections. Only a closed section is left
 # out, so a stray <details> can't hide the rest of the comment.
-# <details open> shows expanded, so its words count too. (authored by claude, not human ardunn)
+# <details open> shows expanded, so its words count too.
+# (authored by claude, not human ardunn)
 words=$(perl -0pe 's{<details\b(?![^>]*\bopen\b).*?</details>}{}gs' <<<"$body" | wc -w | tr -d ' ')
 [[ "$words" -le "$max_comment_words" ]] ||
   fail "$words words outside <details> (limit $max_comment_words). Shorten it, or move detail into one <details> section, and post again."
